@@ -1,6 +1,0 @@
-Ako možete otvoriti ovu datoteku na svom računaru lokalno, onda ste uspješno klonirali repozitorij!
-
-Savjet: nemojte premještati folder u koji klonirate ovaj repozitorij, 
-jer postoji šansa da VS Code ili GitHub pomisle da ste obrisali folder, 
-te morate ponovo klonirati repozitorij. 
-Klonirajte ga na jednu lokaciju, i trudite se da to ne mijenjate.
