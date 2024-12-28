@@ -1,0 +1,157 @@
+main()
+{
+User temp ???
+if(is empty file)
+{
+create-org()
+{	
+	take-user-org-name()
+	create-admin()
+	create-csv-files()
+}
+}
+org our-organization
+read-org-info-from-csv(our-organization)
+do
+{
+read-org-info(temp1)
+User temp ???
+show-login-form() ??? (razjasni gdje se inicijalizuje i konstruise user)
+
+if(user.role = korisnik)
+{
+do{
+print(opcije dostupne ulozi: odjava, lozinka, tiketi-kreiranje)
+take-user-input()
+if(input = odjava)
+	break;
+else if(input = lozinka)
+	passwordChanger()
+	{
+		take-user-old-password-input()
+		take-user-new-password-input()
+		take-user-new-repeat-input()
+		change-password-in-file()
+		this->password = newPassword
+	}
+else if(input = tiketi)
+	tiket-handler
+	{
+		read-csv-user()
+		take-user-input()
+		if(user-input = kreiraj)
+			create-priority-q()
+			ticketCreation()
+				{
+					provjera-nenula-broja-operatera-u-csv()
+					if(brOp > 0)
+						unos-zahtjeva()
+						set-ticket-status-open()
+						dodjela-operateru(pq)
+						set-ticket-status-assigned()
+						write-ticket-to-csv()
+					else
+						print(underflow-error)
+				}
+		else if(user-input = dopuni)
+			if(brojac > 0)
+				take-user-input-id()
+				if(tiketIdStatus = 'vraćen korisniku')
+					dopunaZahtjeva()
+					changeStatus()
+					writeChangesToCSV()
+				
+		else if(user-input = povratak)
+			;
+	}
+}while(flag = 1)
+}
+
+
+else if(user.role = op)
+{
+print(opcije dostupne ulozi: odjava, lozinka, tiketi-pregled)
+take-user-input()
+if(input = odjava)
+	break;
+else if(input = lozinka)
+	passwordChanger()
+	{
+		take-user-old-password-input()
+		take-user-new-password-input()
+		take-user-new-repeat-input()
+		change-password-in-file()
+		this->password = newPassword
+	}
+else if(input = tiketi)
+{
+	tiket-handler
+	{
+		read-csv-user()
+		take-user-input()
+		if(input = change-state)
+			take-op-input-ticket-id()
+			if(idIsValid)
+				/*
+					IMPLEMENTIRAJ LOGIKU KOJOM OPERATER IZ STATUSA 						"DODIJELJEN" MOŽE MIJENJATI SAMO U "U IZRADI" I U 					"VRAĆEN KORISNIKU"
+					
+					A IZ STATUSA "U IZRADI" SAMO U "VRAĆEN KORISNIKU" 					ILI "ZATVOREN"
+				*/	
+	}
+
+
+}
+
+else if(user.role = admin)
+{
+	print(opcije dostupne ulozi: odjava, lozinka, tiketi-operatera ????, tiketi-korisnika ?????, kreiranje naloga, brisanje naloga, statistika, provjera verzije)	
+	take-user-input()
+	if(input = odjava)
+		break;
+	else if(input = lozinka)
+		passwordChanger()
+		{
+			take-user-old-password-input()
+			take-user-new-password-input()
+			take-user-new-repeat-input()
+			change-password-in-file()
+			this->password = newPassword
+		}
+	else if(input = provjera verzije)
+		print-current-version()
+		take-user-input
+		if(user-input = aktiviraj)
+			take-input-activation-key()
+			if(key = valid)
+				activate-licence()
+	else if(input = kreiranje naloga)
+		take-user-input-role()
+		check-permissions()
+		if(permission = true)
+			take-user-input-username()
+			take-user-input-password()
+			create-account()
+			write-to-csv()
+		else
+			print(not allowed)
+	else if(input = brisanje naloga)
+		take-user-input-username-to-delete()
+		confirm-choice()
+		while(user-below exists)
+			current = user below
+		delete-final-user()
+	else if(input = statistika)
+		take-user-input-tickets-to-show-status()
+		take-user-input-tickets-to-show-time()
+		print-tickets-that-are-filtered()
+}
+
+
+delete temp.polja
+
+delete temp
+
+
+
+}while(odjava = true)
+}
