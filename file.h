@@ -14,6 +14,7 @@ public:
     void setNamefile(const std::string& namefile) { this->namefile = namefile; }
     std::string getNamefile() const { return namefile; }
 
+    //Metode za Usere
     bool openFile()
     {
         std::ifstream file(namefile);
@@ -83,39 +84,25 @@ public:
     }
     bool addUser(const std::string &username, const std::string &password, const std::string &role)
     {
-        std::ifstream file(namefile);
-        if (!file)
+        if (!userExist(username))
         {
-            std::cout << "File failed opening, close running file" << std::endl;
-            return false;
-        }
-
-        std::string line;
-        while (std::getline(file, line))
-        {
-            std::stringstream ss(line);
-            std::string user, pass, role;
-
-            if (std::getline(ss, user, ',') && user == username)
+            std::ofstream fileAppend(namefile, std::ios::app);
+            if (!fileAppend)
             {
-                std::cout << "User with the username '" << username << "' already exists." << std::endl;
-                file.close();
-                return false; // Ako korisnik postoji, ne dodajte ga
+                std::cout << "File failed opening, close running file" << std::endl;
+                return false;
             }
-        }
-        file.close();
 
-        std::ofstream fileAppend(namefile, std::ios::app);
-        if (!fileAppend)
+            fileAppend << username << "," << password << "," << role << "\n"; // Pravilno formatiranje
+            fileAppend.close();
+            return true;
+        }
+        else
         {
-            std::cout << "File failed opening, close running file" << std::endl;
-            return false;
+            return true;
         }
-
-        fileAppend << username << "," << password << "," << role << "\n"; // Pravilno formatiranje
-        fileAppend.close();
-        return true;
     }
+
     std::string findRole(const std::string &username)
     {
         std::ifstream file(namefile); 
@@ -140,8 +127,34 @@ public:
                 }
             }
         }
-
         file.close();
         return ""; 
     }
+    private:
+        bool userExist(std::string username)
+        {
+            std::ifstream file(namefile);
+            if (!file)
+            {
+                std::cout << "File failed opening, close running file" << std::endl;
+                return false;
+            }
+
+            std::string line;
+            while (std::getline(file, line))
+            {
+                std::stringstream ss(line);
+                std::string user, pass, role;
+
+                if (std::getline(ss, user, ',') && std::getline(ss, pass, ',') && std::getline(ss, role, ',') && (user == username))
+                {
+                    std::cout << "User with the username '" << username << "' already exists." << std::endl;
+                    file.close();
+                    return true; 
+                }
+            }
+            return false;
+            file.close();
+        };
+
 };
