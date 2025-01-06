@@ -10,6 +10,10 @@ class Ticket {
     std::string korisnik;
 
     public:
+
+    Ticket(int id, const std::string& op, const std::string& kor, std::string stat, std::string info)
+    : ID(id), status(stat), informacije(info), operater(op), korisnik(kor) {}
+    
     int getID () const
     {
         return this->ID;
