@@ -3,6 +3,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include "Ticket.h"
 
 
 class file {
@@ -130,31 +131,97 @@ public:
         file.close();
         return ""; 
     }
-    private:
-        bool userExist(std::string username)
+
+
+
+private:
+    bool userExist(std::string username)
+    {
+        std::ifstream file(namefile);
+        if (!file)
         {
-            std::ifstream file(namefile);
-            if (!file)
-            {
-                std::cout << "File failed opening, close running file" << std::endl;
-                return false;
-            }
-
-            std::string line;
-            while (std::getline(file, line))
-            {
-                std::stringstream ss(line);
-                std::string user, pass, role;
-
-                if (std::getline(ss, user, ',') && std::getline(ss, pass, ',') && std::getline(ss, role, ',') && (user == username))
-                {
-                    std::cout << "User with the username '" << username << "' already exists." << std::endl;
-                    file.close();
-                    return true; 
-                }
-            }
+            std::cout << "File failed opening, close running file" << std::endl;
             return false;
-            file.close();
-        };
+        }
 
+        std::string line;
+        while (std::getline(file, line))
+        {
+            std::stringstream ss(line);
+            std::string user, pass, role;
+
+            if (std::getline(ss, user, ',') && std::getline(ss, pass, ',') && std::getline(ss, role, ',') && (user == username))
+            {
+                std::cout << "User with the username '" << username << "' already exists." << std::endl;
+                file.close();
+                return true;
+            }
+        }
+        return false;
+        file.close();
+    };
+
+    // METODE ZA TIKETE
+
+   public:
+    void unosInformacijaOTiketu() {
+    int id = generateID(); 
+
+    std::string status = "dodijeljen operateru";  
+    std::string informacije, operater, korisnik;
+
+    std::cout << "ID tiketa: " << id << std::endl;
+
+    std::cout << "Unesite vase ime: ";
+    std::getline(std::cin, korisnik);
+
+    std::cout << "Unesite informacije o tiketu: ";
+    std::getline(std::cin, informacije);
+
+    // Ovdje treba dodeliti operatera iz prioritetnog reda
+    
+    Ticket ticket(id, status, informacije, operater, korisnik);
+    upisTiketaUFajl(ticket); 
+    std::cout << "Tiket je uspjesno kreiran." << std::endl;
+}
+
+private:
+    void upisTiketaUFajl(const Ticket &tiket) 
+    {
+        std::ofstream fileOut(namefile, std::ios::app); // Otvaranje fajla u režimu dodavanja
+        if (!fileOut)
+        {
+            std::cout << "Neuspjesno otvaranje fajla." << std::endl;
+            return;
+        }
+
+        fileOut << tiket.getID() << ","
+                << tiket.getStatus() << ","
+                << tiket.getInfo() << ","
+                << tiket.getOperater() << ","
+                << tiket.getKorisnik() << "\n";
+
+        fileOut.close();
+    }
+
+    int generateID() //Metoda koja cita i dodjeljuje jedinstveni ID tiketu
+    {
+        std::ifstream inputFile("id.txt");
+        int currentID = 0;
+
+        if (inputFile)
+        {
+            inputFile >> currentID;
+
+            inputFile.close();
+
+            currentID++;
+
+            std::ofstream outputFile("id.txt");
+            outputFile << currentID;
+            outputFile.close();
+
+            return currentID;
+        }
+    }
 };
