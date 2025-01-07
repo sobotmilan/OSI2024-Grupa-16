@@ -164,11 +164,64 @@ private:
     // METODE ZA TIKETE
 
    public:
+
+ void updateOperatorInFile(const Ticket& ticket) {
+    std::ifstream inputFile("Ticket.csv");
+    std::ofstream outputFile("Ticket_temp.csv");
+    std::string line;
+    bool found = false;
+
+    if (!inputFile.is_open() || !outputFile.is_open()) {
+        std::cout << "Error opening file." << std::endl;
+        return;
+    }
+
+    while (std::getline(inputFile, line)) {
+        std::stringstream ss(line);
+        std::string token;
+        std::vector<std::string> data;
+
+        // Parse the current line of the CSV file
+        while (std::getline(ss, token, ',')) {
+            data.push_back(token);
+        }
+
+        // If the ID matches, update the row
+        if (!data.empty() && std::stoi(data[0]) == ticket.getId()) {
+            data[1] = "assigned to operator";  // Update the status
+            data[3] = ticket.getOperater();   // Update the operator
+            found = true;
+        }
+
+        // Write the row to the temporary file
+        for (size_t i = 0; i < data.size(); ++i) {
+            outputFile << data[i];
+            if (i < data.size() - 1) {
+                outputFile << ",";
+            }
+        }
+        outputFile << "\n";
+    }
+
+    inputFile.close();
+    outputFile.close();
+
+    // Replace the old file with the new one
+    std::remove("Ticket.csv");
+    std::rename("Ticket_temp.csv", "Ticket.csv");
+
+    if (found) {
+        std::cout << "Ticket with ID: " << ticket.getId() << " successfully updated." << std::endl;
+    } else {
+        std::cout << "Ticket with ID: " << ticket.getId() << " not found." << std::endl;
+    }
+}
     void unosInformacijaOTiketu() {
     int id = generateID(); 
 
-    std::string status = "dodijeljen operateru";  
-    std::string informacije, operater, korisnik;
+    std::string status = "otvoren";  
+    std::string operater="";
+    std::string informacije, korisnik;
 
     std::cout << "ID tiketa: " << id << std::endl;
 
@@ -177,16 +230,17 @@ private:
 
     std::cout << "Unesite informacije o tiketu: ";
     std::getline(std::cin, informacije);
-
-    // Ovdje treba dodeliti operatera iz prioritetnog reda
     
     Ticket ticket(id, status, informacije, operater, korisnik);
     upisTiketaUFajl(ticket); 
     std::cout << "Tiket je uspjesno kreiran." << std::endl;
 }
 
+
+
+
 private:
-    void upisTiketaUFajl(const Ticket &tiket) 
+    void upisTiketaUFajl(const Ticket &ticket) 
     {
         std::ofstream fileOut(namefile, std::ios::app); // Otvaranje fajla u režimu dodavanja
         if (!fileOut)
@@ -195,11 +249,11 @@ private:
             return;
         }
 
-        fileOut << tiket.getID() << ","
-                << tiket.getStatus() << ","
-                << tiket.getInfo() << ","
-                << tiket.getOperater() << ","
-                << tiket.getKorisnik() << "\n";
+        fileOut << ticket.getID() << ","
+                << ticket.getStatus() << ","
+                << ticket.getInfo() << ","
+                << ticket.getOperater() << ","
+                << ticket.getKorisnik() << "\n";
 
         fileOut.close();
     }
