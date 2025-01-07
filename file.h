@@ -4,6 +4,8 @@
 #include <sstream>
 #include <string>
 #include "Ticket.h"
+#include <vector>
+#include "User.h"
 
 
 class file {
@@ -167,34 +169,29 @@ private:
 
  void updateOperatorInFile(const Ticket& ticket) {
     std::ifstream inputFile("Ticket.csv");
-    std::ofstream outputFile("Ticket_temp.csv");
+    std::ofstream outputFile("TicketTemp.csv");
     std::string line;
-    bool found = false;
-
-    if (!inputFile.is_open() || !outputFile.is_open()) {
+    
+     if (!inputFile || !outputFile) {
         std::cout << "Error opening file." << std::endl;
         return;
     }
 
     while (std::getline(inputFile, line)) {
         std::stringstream ss(line);
-        std::string token;
-        std::vector<std::string> data;
+        std::string part;
+        std::vector<std::string> data; //Vektor koji cuva podatke jednog po jednog tiketa
 
-        // Parse the current line of the CSV file
-        while (std::getline(ss, token, ',')) {
-            data.push_back(token);
+        while (std::getline(ss, part, ',')) {
+            data.push_back(part);
         }
 
-        // If the ID matches, update the row
-        if (!data.empty() && std::stoi(data[0]) == ticket.getId()) {
-            data[1] = "assigned to operator";  // Update the status
-            data[3] = ticket.getOperater();   // Update the operator
-            found = true;
+        if (std::stoi(data[0]) == ticket.getID()) { //Promjena operatera i statusa ako je pronadjen odgovarajuci tiket
+            data[1] = ticket.getStatus();  
+            data[3] = ticket.getOperater();   
         }
 
-        // Write the row to the temporary file
-        for (size_t i = 0; i < data.size(); ++i) {
+        for (int i = 0; i < data.size(); ++i) { //Dodavanje svakog tiketa (neizmjenjenih i izmijenjenog) u temp fajl
             outputFile << data[i];
             if (i < data.size() - 1) {
                 outputFile << ",";
@@ -206,17 +203,11 @@ private:
     inputFile.close();
     outputFile.close();
 
-    // Replace the old file with the new one
     std::remove("Ticket.csv");
-    std::rename("Ticket_temp.csv", "Ticket.csv");
-
-    if (found) {
-        std::cout << "Ticket with ID: " << ticket.getId() << " successfully updated." << std::endl;
-    } else {
-        std::cout << "Ticket with ID: " << ticket.getId() << " not found." << std::endl;
-    }
+    std::rename("TicketTemp.csv", "Ticket.csv"); //Pocetni fajl zamjenjujemo temp fajlom
 }
-    void unosInformacijaOTiketu() {
+
+    void inputTicketInformation() {
     int id = generateID(); 
 
     std::string status = "otvoren";  
@@ -232,7 +223,7 @@ private:
     std::getline(std::cin, informacije);
     
     Ticket ticket(id, status, informacije, operater, korisnik);
-    upisTiketaUFajl(ticket); 
+    saveTicketToFile(ticket); 
     std::cout << "Tiket je uspjesno kreiran." << std::endl;
 }
 
@@ -240,12 +231,12 @@ private:
 
 
 private:
-    void upisTiketaUFajl(const Ticket &ticket) 
+    void saveTicketToFile(const Ticket &ticket) 
     {
         std::ofstream fileOut(namefile, std::ios::app); // Otvaranje fajla u režimu dodavanja
         if (!fileOut)
         {
-            std::cout << "Neuspjesno otvaranje fajla." << std::endl;
+            std::cout << "Error opening file." << std::endl;
             return;
         }
 
@@ -278,4 +269,48 @@ private:
             return currentID;
         }
     }
+
+    public:
+    //1.3 Prikaz tiketa korisnika
+        void showUserTickets(const User &user)
+        {
+            std::ifstream inputFile("Ticket.csv");
+            std::string line;
+            bool found = false;
+
+            if (!inputFile)
+            {
+                std::cout << "Error opening file." << std::endl;
+                return;
+            }
+
+            while (std::getline(inputFile, line))
+            {
+                std::stringstream ss(line);
+                std::string part;
+                std::vector<std::string> data;
+
+                while (std::getline(ss, part, ','))
+                {
+                    data.push_back(part);
+                }
+
+                if (data[4] == user.getUsername()) // Korisnik peti podatak tiketa
+                {
+                    std::cout << "ID: " << data[0] << std::endl
+                              << "Info: " << data[1] << std::endl
+                              << "Status: " << data[2] << std::endl
+                              << "Operator: " << data[3] << std::endl
+                              << "User: " << data[4] << std::endl;
+                    found = true;
+                }
+            }
+
+            if (!found)
+            {
+                std::cout << "No tickets found." << std::endl;
+            }
+
+            inputFile.close();
+        }
 };
