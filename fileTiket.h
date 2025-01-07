@@ -180,4 +180,66 @@ private:
             std::cout << "No status changes are allowed for the current state." << std::endl;
         }
     }
+
+public:
+    // 1.4 dopuna informacija tiketa
+
+    void addNewInfoToTicket(Ticket &ticket)
+    {
+        std::cout << "Current information: " << ticket.getInfo() << std::endl;
+        std::cout << "Add new information: ";
+
+        std::string newInfo;
+        std::getline(std::cin, newInfo);
+        ticket.setInfo(ticket.getInfo() + " " + newInfo);
+
+        std::cout << "Information added succesfully." << std::endl;
+    }
+
+    void addTicketNewInfoToFile(const Ticket &ticket)
+    {
+        std::ifstream inputFile("Ticket.csv");
+        std::ofstream outputFile("TicketTemp.csv");
+
+        if (!inputFile.is_open() || !outputFile.is_open())
+        {
+            std::cout << "Error opening file." << std::endl;
+            return;
+        }
+
+        std::string line;
+
+        while (std::getline(inputFile, line))
+        {
+            std::stringstream ss(line);
+            std::string part;
+            std::vector<std::string> data;
+
+            while (std::getline(ss, part, ','))
+            {
+                data.push_back(part);
+            }
+
+            if (std::stoi(data[0]) == ticket.getID())
+            {
+                data[2] = ticket.getInfo();
+            }
+
+            for (int i = 0; i < data.size(); i++)
+            {
+                outputFile << data[i];
+                if (i < data.size() - 1)
+                {
+                    outputFile << ",";
+                }
+            }
+            outputFile << "\n";
+        }
+
+        inputFile.close();
+        outputFile.close();
+
+        std::remove("Ticket.csv");
+        std::rename("TicketTemp.csv", "Ticket.csv");
+    }
 };

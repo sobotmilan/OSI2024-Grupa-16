@@ -44,4 +44,9 @@ class Ticket {
         status=newStatus;
     }
 
+    void setInfo(const std::string& updatedInfo)
+    {
+        informacije = updatedInfo;
+    }
+
 };
