@@ -57,9 +57,30 @@ std::ostream &operator<<(std::ostream &os, const Operater &op)
     return os;
 }
 
+void writeOpsToCSV(const vector<Operater> &operaters)
+{
+    // Open the file in write mode
+    ofstream file("Ops.csv", ios::out);
+    if (!file.is_open())
+    {
+        throw runtime_error("Neuspjesno otvaranje ulazne datoteke Ops.csv");
+    }
+
+    // Write the header row
+    file << "user,numTicketsAssigned\n";
+
+    // Write each Operater's data
+    for (const auto &operater : operaters)
+    {
+        file << operater.getUser() << "," << operater.getNumTickets() << "\n";
+    }
+
+    file.close();
+    cout << "Podaci uspjesno upisani u datoteku." << endl;
+}
 Operater findSuitableOperater()
 {
-    ifstream file("Ops.csv");
+    ifstream file("Ops.csv", ios::in);
     if (!file)
     {
         throw runtime_error("Nemoguce otvaranje datoteke sa operaterima.");
