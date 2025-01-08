@@ -4,6 +4,8 @@
 #include <sstream>
 #include <string>
 #include "Ticket.h"
+#include <vector>
+#include "User.h"
 
 
 class file {
@@ -187,7 +189,7 @@ private:
         }
 
         // If the ID matches, update the row
-        if (!data.empty() && std::stoi(data[0]) == ticket.getId()) {
+        if (!data.empty() && std::stoi(data[0]) == ticket.getID()) {
             data[1] = "assigned to operator";  // Update the status
             data[3] = ticket.getOperater();   // Update the operator
             found = true;
@@ -211,25 +213,29 @@ private:
     std::rename("Ticket_temp.csv", "Ticket.csv");
 
     if (found) {
-        std::cout << "Ticket with ID: " << ticket.getId() << " successfully updated." << std::endl;
+        std::cout << "Ticket with ID: " << ticket.getID() << " successfully updated." << std::endl;
     } else {
-        std::cout << "Ticket with ID: " << ticket.getId() << " not found." << std::endl;
+        std::cout << "Ticket with ID: " << ticket.getID() << " not found." << std::endl;
     }
 }
-    void unosInformacijaOTiketu() {
+    void unosInformacijaOTiketu(const User& user) {
     int id = generateID(); 
 
     std::string status = "otvoren";  
     std::string operater="";
     std::string informacije, korisnik;
 
+    korisnik = user.getUsername();
+    
     std::cout << "ID tiketa: " << id << std::endl;
-
-    std::cout << "Unesite vase ime: ";
-    std::getline(std::cin, korisnik);
 
     std::cout << "Unesite informacije o tiketu: ";
     std::getline(std::cin, informacije);
+
+    if (informacije.empty()) {
+    std::cout << "Informacije ne mogu biti prazne. Tiket nije kreiran." << std::endl;
+    return;
+    }
     
     Ticket ticket(id, status, informacije, operater, korisnik);
     upisTiketaUFajl(ticket); 
@@ -277,5 +283,7 @@ private:
 
             return currentID;
         }
+
+        return -1;
     }
 };
