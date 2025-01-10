@@ -2,24 +2,61 @@
 #include <string>
 #include <iostream>
 #include <queue>
+#include <unordered_map>
 #include <iomanip>
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include "User.h"
 using namespace std;
 
-class Operater
+class Operater : public User
 {
 protected:
-    std::string user; // korisnicko ime
-    int numTickets;   // br dodijeljenih tiketa
+    int numTickets; // br dodijeljenih tiketa
 
 public:
-    Operater(const std::string &name, int tickets)
-        : user(name), numTickets(tickets) {}
-    std::string getUser() const
+    explicit Operater(std::string username, std::string password, std::string role, int tickets)
+        : User(username, password, role), numTickets(tickets) {}
+    Operater(const Operater &other) : User(other.getUsername(), other.getPassword(), other.getRole()), numTickets(other.numTickets) {}
+    Operater(Operater &&other) : User(other.getUsername(), other.getPassword(), other.getRole()), numTickets(other.numTickets)
     {
-        return this->user;
+        other.setUsername("");
+        other.setPassword("");
+        other.setRole("");
+        other.setNumTickets(0);
+    }
+    ~Operater() {}
+
+    Operater &operator=(const Operater &other)
+    {
+        if (this != &other)
+        {
+            this->setUsername(other.getUsername());
+            this->setPassword(other.getPassword());
+            this->setNumTickets(other.getNumTickets());
+        }
+        return *this;
+    }
+    Operater &operator=(Operater &&other)
+    {
+        if (this != &other)
+        {
+            this->setUsername(other.getUsername());
+            this->setPassword(other.getPassword());
+            this->setNumTickets(other.getNumTickets());
+
+            other.setUsername("");
+            other.setPassword("");
+            other.setRole("");
+            other.setNumTickets(0);
+        }
+        return *this;
+    }
+
+    void setNumTickets(int value)
+    {
+        this->numTickets = value;
     }
     int getNumTickets() const
     {
@@ -29,7 +66,7 @@ public:
     {
         if (this->numTickets == other.numTickets) // ako se desi ne daj Boze isti broj tiketa u dva operatera, redace se leksikografski u red.
         {
-            return this->user > other.user;
+            return this->getUsername() > other.getUsername();
         }
         return this->numTickets < other.numTickets;
     }
@@ -37,81 +74,133 @@ public:
     {
         if (this->numTickets == other.numTickets) // ako se desi ne daj Boze isti broj tiketa u dva operatera, redace se leksikografski u red.
         {
-            return this->user > other.user;
+            return this->getUsername() > other.getUsername();
         }
         return this->numTickets > other.numTickets;
     }
     bool operator==(const Operater &other) const
     {
-        return ((this->numTickets == other.numTickets) & (this->user == other.user));
+        return ((this->numTickets == other.numTickets) & (this->getUsername() == other.getUsername()));
     }
     bool operator!=(const Operater &other) const
     {
-        return ((this->numTickets != other.numTickets) || (this->user != other.user));
+        return ((this->numTickets != other.numTickets) || (this->getUsername() != other.getUsername()));
     }
 };
 
 std::ostream &operator<<(std::ostream &os, const Operater &op)
 {
-    os << op.getUser() << "," << op.getNumTickets();
+    os << op.getUsername() << "," << op.getNumTickets();
     return os;
 }
 
-void writeOpsToCSV(const vector<Operater> &operaters)
-{
-    // Open the file in write mode
-    ofstream file("Ops.csv", ios::out);
-    if (!file.is_open())
-    {
-        throw runtime_error("Neuspjesno otvaranje ulazne datoteke Ops.csv");
-    }
-
-    // Write the header row
-    file << "user,numTicketsAssigned\n";
-
-    // Write each Operater's data
-    for (const auto &operater : operaters)
-    {
-        file << operater.getUser() << "," << operater.getNumTickets() << "\n";
-    }
-
-    file.close();
-    cout << "Podaci uspjesno upisani u datoteku." << endl;
-}
 Operater findSuitableOperater()
 {
-    ifstream file("Ops.csv", ios::in);
-    if (!file)
+    ifstream userBase("User.csv", ios::in);
+    if (!userBase.is_open())
     {
         throw runtime_error("Nemoguce otvaranje datoteke sa operaterima.");
     }
 
+    userBase.seekg(0, ios::beg);
+
+    ifstream ticketBase("Ticket.csv", ios::in);
+    if (!ticketBase.is_open())
+    {
+        throw runtime_error("Nemoguce otvaranje datoteke sa tiketima.");
+    }
+
+    ticketBase.seekg(0, ios::beg);
+
     priority_queue<Operater, vector<Operater>, greater<Operater>> pq;
     string currLine;
 
-    if (!getline(file, currLine))
+    unordered_map<string, int> operaterTicketCount;
+
+    if (!getline(userBase, currLine)) // NE UKLANJATI OVU LINIJU, OVO PRESKACE PRVU VRSTU KOJA SADRZI ZAGLAVALJA "USER,PASS,ROLE"
     {
-        throw std::runtime_error("Datoteka prazna ili fale headeri.");
+        throw runtime_error("Datoteka prazna ili nemoguće čitanje.");
     }
 
-    while (getline(file, currLine))
+    while (getline(userBase, currLine))
     {
         istringstream ss(currLine);
-        string user;
-        int numT;
+        string username, pass, role;
 
-        if (getline(ss, user, ',') && ss >> numT)
+        if (getline(ss, username, ',') && getline(ss, pass, ',') && getline(ss, role, ','))
         {
-            pq.emplace(user, numT);
+            if (role == "Operater")
+            {
+                Operater op(username, pass, role, 0);
+                pq.emplace(op);
+                operaterTicketCount[username] = 0;
+            }
         }
     }
 
-    file.close();
+    if (!getline(ticketBase, currLine)) // NE UKLANJATI OVU LINIJU, OVO PRESKACE PRVU VRSTU KOJA SADRZI ZAGLAVALJA "ID,OPERATER" ITD.
+    {
+        throw runtime_error("Datoteka prazna ili fale headeri.");
+    }
+
+    while (getline(ticketBase, currLine))
+    {
+        istringstream ss(currLine);
+        string id, status, info, ope, kor, datumo, datumz;
+        if (getline(ss, id, ',') && getline(ss, status, ',') && getline(ss, info, ',') && getline(ss, ope, ',') && getline(ss, kor, ',') && getline(ss, datumo, ',') && getline(ss, datumz, ','))
+        {
+            if (operaterTicketCount.find(ope) != operaterTicketCount.end())
+            {
+                operaterTicketCount[ope]++;
+            }
+        }
+    }
+
+    userBase.close();
+    ticketBase.close();
 
     if (pq.empty())
     {
         throw runtime_error("Nema operatera u datoteci!");
     }
 
-    return pq.top();
+    priority_queue<Operater, vector<Operater>, greater<Operater>> updatedPQ;
+
+    while (!pq.empty())
+    {
+        Operater op = pq.top();
+        pq.pop();
+
+        op.setNumTickets(operaterTicketCount[op.getUsername()]);
+        updatedPQ.emplace(op);
+
+        // pravim novi, rezultantni prioritetni red iz kog ce se vratiti prvi element
+    }
+
+    return updatedPQ.top();
+}
+
+void writeOpsToCSV(const std::vector<Operater> &operators)
+{
+    ofstream userBase("User.csv", ios::app);
+    if (!userBase.is_open())
+    {
+        throw runtime_error("Nemoguce otvaranje datoteke za pisanje operatera.");
+    }
+
+    userBase.seekp(0, ios::end);
+    if (userBase.tellp() == 0)
+    {
+        userBase << "username,password,role\n";
+    }
+
+    for (const auto &op : operators)
+    {
+        userBase << op.getUsername() << ","
+                 << op.getPassword() << ","
+                 << op.getRole() << "\n";
+    }
+
+    userBase.close();
+    std::cout << "Operateri su uspesno upisani u datoteku.\n";
 }
