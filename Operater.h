@@ -99,7 +99,7 @@ Operater findSuitableOperater()
     ifstream userBase("User.csv", ios::in);
     if (!userBase.is_open())
     {
-        throw runtime_error("Nemoguce otvaranje datoteke sa operaterima.");
+        throw runtime_error("Nemoguce otvaranje baze korisnika.");
     }
 
     userBase.seekg(0, ios::beg);
@@ -107,7 +107,7 @@ Operater findSuitableOperater()
     ifstream ticketBase("Ticket.csv", ios::in);
     if (!ticketBase.is_open())
     {
-        throw runtime_error("Nemoguce otvaranje datoteke sa tiketima.");
+        throw runtime_error("Nemoguce otvaranje baze tiketa.");
     }
 
     ticketBase.seekg(0, ios::beg);
@@ -119,7 +119,7 @@ Operater findSuitableOperater()
 
     if (!getline(userBase, currLine)) // NE UKLANJATI OVU LINIJU, OVO PRESKACE PRVU VRSTU KOJA SADRZI ZAGLAVALJA "USER,PASS,ROLE"
     {
-        throw runtime_error("Datoteka prazna ili nemoguće čitanje.");
+        throw runtime_error("Datoteka prazna ili nedostaju zaglavlja.");
     }
 
     while (getline(userBase, currLine))
@@ -140,13 +140,13 @@ Operater findSuitableOperater()
 
     if (!getline(ticketBase, currLine)) // NE UKLANJATI OVU LINIJU, OVO PRESKACE PRVU VRSTU KOJA SADRZI ZAGLAVALJA "ID,OPERATER" ITD.
     {
-        throw runtime_error("Datoteka prazna ili fale headeri.");
+        throw runtime_error("Datoteka prazna ili nedostaju zaglavlja.");
     }
 
     while (getline(ticketBase, currLine))
     {
         istringstream ss(currLine);
-        string id, status, info, ope, kor, datumo, datumz;
+        string id, status, info, ope, kor, datumo, datumz; // id,status,zahtjevi,operater,korisnik,datum otvaranja,datum zatvaranja
         if (getline(ss, id, ',') && getline(ss, status, ',') && getline(ss, info, ',') && getline(ss, ope, ',') && getline(ss, kor, ',') && getline(ss, datumo, ',') && getline(ss, datumz, ','))
         {
             if (operaterTicketCount.find(ope) != operaterTicketCount.end())
@@ -185,7 +185,7 @@ void writeOpsToCSV(const std::vector<Operater> &operators)
     ofstream userBase("User.csv", ios::app);
     if (!userBase.is_open())
     {
-        throw runtime_error("Nemoguce otvaranje datoteke za pisanje operatera.");
+        throw runtime_error("Nemoguce otvaranje ulazne baze.");
     }
 
     userBase.seekp(0, ios::end);
@@ -202,5 +202,31 @@ void writeOpsToCSV(const std::vector<Operater> &operators)
     }
 
     userBase.close();
-    std::cout << "Operateri su uspesno upisani u datoteku.\n";
+    std::cout << "Svi operateri su uspjesno upisani u bazu.\n";
+}
+
+int numOpsInOrg()
+{
+    ifstream userBase("User.csv", ios::in);
+    if (userBase.is_open() == false)
+        throw("Nemoguce otvaranje baze korisnika.");
+
+    string currLine;
+    int numOp = 0;
+
+    while (getline(userBase, currLine))
+    {
+        istringstream ss(currLine);
+        string username, pass, role;
+
+        if (getline(ss, username, ',') && getline(ss, pass, ',') && getline(ss, role, ','))
+        {
+            if (role == "Operater")
+            {
+                numOp++;
+            }
+        }
+    }
+
+    return numOp;
 }
