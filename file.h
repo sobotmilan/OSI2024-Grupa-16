@@ -4,17 +4,18 @@
 #include <sstream>
 #include <string>
 
-
-class file {
+class file
+{
 private:
     std::string namefile;
+
 public:
     file() : namefile("") {}
-    file(const std::string& namefile) : namefile(namefile) {}
-    void setNamefile(const std::string& namefile) { this->namefile = namefile; }
+    file(const std::string &namefile) : namefile(namefile) {}
+    void setNamefile(const std::string &namefile) { this->namefile = namefile; }
     std::string getNamefile() const { return namefile; }
 
-    //Metode za Usere
+    // Metode za Usere
     bool openFile()
     {
         std::ifstream file(namefile);
@@ -35,9 +36,11 @@ public:
         return true;
     }
 
-    bool isEmpty(){
+    bool isEmpty()
+    {
         std::ifstream file(namefile);
-        if (!file){
+        if (!file)
+        {
             std::cout << "File failed opening" << std::endl;
             return false;
         }
@@ -48,32 +51,38 @@ public:
             if (!line.empty() && line.find_first_not_of(" \t\r\n") != std::string::npos)
             {
                 file.close();
-                return false; 
+                return false;
             }
         }
-        file.seekg(0, std::ios::beg);  
+        file.seekg(0, std::ios::beg);
         file.close();
-        return true; 
+        return true;
     }
 
-    bool login(std::string username, std::string password){
+    bool login(std::string username, std::string password)
+    {
         std::ifstream file(namefile);
-        if (!file){
+        if (!file)
+        {
             std::cout << "File failed opening" << std::endl;
             return false;
         }
         std::string line;
-        while (std::getline(file, line)){
+        while (std::getline(file, line))
+        {
             std::stringstream ss(line);
             std::string user, pass, role;
 
-            if (std::getline(ss, user, ',') && std::getline(ss, pass, ',') && std::getline(ss, role, ',')){
-                if (user == username && pass == password){
+            if (std::getline(ss, user, ',') && std::getline(ss, pass, ',') && std::getline(ss, role, ','))
+            {
+                if (user == username && pass == password)
+                {
                     file.close();
                     return true;
                 }
             }
-            else{
+            else
+            {
                 std::cout << "Invalid line format: " << line << std::endl;
                 file.close();
                 return false;
@@ -82,7 +91,7 @@ public:
         file.close();
         return false;
     }
-    
+
     bool addUser(const std::string &username, const std::string &password, const std::string &role)
     {
         if (!userExist(username))
@@ -120,7 +129,7 @@ public:
             return false;
         }
 
-        bool succes=false;
+        bool succes = false;
         std::string line;
         while (std::getline(file, line))
         {
@@ -131,27 +140,32 @@ public:
             std::getline(ss, pass, ',');
             std::getline(ss, role, ',');
 
-            if(user!=username){
-                tempfile <<line<<"\n";
+            if (user != username)
+            {
+                tempfile << line << "\n";
             }
-            else{
-                succes=true;
+            else
+            {
+                succes = true;
             }
         }
         file.close();
         tempfile.close();
 
-        if(!succes){
-            std::cout<<"User is not found";
+        if (!succes)
+        {
+            std::cout << "User is not found";
             std::remove("temp.csv");
             return succes;
         }
-        if(std::remove(namefile.c_str()) !=0){
-            std::cout<<"Error deleting original file";
+        if (std::remove(namefile.c_str()) != 0)
+        {
+            std::cout << "Error deleting original file";
             return false;
         }
-        if(std::rename("temp.csv", namefile.c_str()) !=0){
-            std::cout<<"Error rename temp file";
+        if (std::rename("temp.csv", namefile.c_str()) != 0)
+        {
+            std::cout << "Error rename temp file";
             return false;
         }
         return true;
@@ -159,11 +173,11 @@ public:
 
     std::string findRole(const std::string &username)
     {
-        std::ifstream file(namefile); 
+        std::ifstream file(namefile);
         if (!file)
         {
             std::cout << "File failed opening" << std::endl;
-            return ""; 
+            return "";
         }
 
         std::string line;
@@ -177,38 +191,63 @@ public:
                 if (user == username)
                 {
                     file.close();
-                    return role; 
+                    return role;
                 }
             }
         }
         file.close();
-        return ""; 
+        return "";
     }
-    private:
-        bool userExist(std::string username)
+    int getNumAdmin() const
+    {
+        std::ifstream userBase("User.csv", std::ios::in);
+        if (userBase.is_open() == false)
+            throw("Nemoguce otvaranje baze korisnika.");
+
+        std::string currLine;
+        int numAd = 0;
+
+        while (getline(userBase, currLine))
         {
-            std::ifstream file(namefile);
-            if (!file)
-            {
-                std::cout << "File failed opening, close running file" << std::endl;
-                return false;
-            }
+            std::istringstream ss(currLine);
+            std::string username, pass, role;
 
-            std::string line;
-            while (std::getline(file, line))
+            if (getline(ss, username, ',') && getline(ss, pass, ',') && getline(ss, role, ','))
             {
-                std::stringstream ss(line);
-                std::string user, pass, role;
-
-                if (std::getline(ss, user, ',') && std::getline(ss, pass, ',') && std::getline(ss, role, ',') && (user == username))
+                if (role == "Admin")
                 {
-                    std::cout << "User with the username '" << username << "' already exists." << std::endl;
-                    file.close();
-                    return true; 
+                    numAd++;
                 }
             }
-            file.close();
-            return false;
-        };
+        }
 
+        return numAd;
+    }
+
+private:
+    bool userExist(std::string username)
+    {
+        std::ifstream file(namefile);
+        if (!file)
+        {
+            std::cout << "File failed opening, close running file" << std::endl;
+            return false;
+        }
+
+        std::string line;
+        while (std::getline(file, line))
+        {
+            std::stringstream ss(line);
+            std::string user, pass, role;
+
+            if (std::getline(ss, user, ',') && std::getline(ss, pass, ',') && std::getline(ss, role, ',') && (user == username))
+            {
+                std::cout << "User with the username '" << username << "' already exists." << std::endl;
+                file.close();
+                return true;
+            }
+        }
+        file.close();
+        return false;
+    };
 };
