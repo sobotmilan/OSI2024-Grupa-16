@@ -21,7 +21,9 @@ class User{
             }
             return false;
         }
-        void prikaziMeniZaKorisnike() {
+    
+};
+void prikaziMeniZaKorisnike() {
     int izbor = 0;
 
     do {
@@ -80,5 +82,3 @@ class User{
         }
     } while (izbor != 4);
 }
-
-};
