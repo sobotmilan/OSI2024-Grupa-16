@@ -1,5 +1,9 @@
 #pragma once
 #include <iostream>
+#include <fstream>
+#include <sstream>
+#include <iostream>
+#include <unordered_map>
   
 class Organizacija
 {
@@ -12,4 +16,34 @@ void setKljuc(std::string kljuc){this->kljuc=kljuc;}
 
  std::string getKljuc() const{return kljuc;}
   std::string getNazivOrganizacije() const{return nazivOrganizacije;}
+
+    //Provjerava verziju organizacije
+    std::string provjeriVerziju() {
+        // Ako je ključ prazan, organizacija je besplatna
+        if (kljuc.empty()) {
+            return "Besplatna verzija";
+        }
+
+        // Ako ključ nije prazan, provjeravamo CSV fajl
+        std::ifstream file("keys.csv");
+        std::string line;
+        std::string status = "Besplatna verzija";  // Podrazumijevano je besplatna
+
+        // Čitanje CSV fajla
+        while (std::getline(file, line)) {
+            std::stringstream ss(line);
+            std::string key, keyStatus;
+            std::getline(ss, key, ',');  // Učitaj ključ
+            std::getline(ss, keyStatus); // Učitaj status
+
+            // Ako nađemo odgovarajući ključ
+            if (key == kljuc && keyStatus == "aktivan") {
+                status = "Komercijalna verzija";
+                break;
+            }
+        }
+        file.close();
+        return status;
+    }
+
 };

@@ -3,6 +3,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <vector>
 
 
 class file {
@@ -154,6 +155,53 @@ public:
 
          inputFile.close();
          return false; // Ključ nije validan
+    }
+    // Metoda za pronalaženje prvog slobodnog ključa i njegovo aktiviranje
+    static std::string getFirstFreeKey(const std::string& fileName) {
+        std::ifstream file(fileName);
+        if (!file.is_open()) {
+            std::cerr << "File failed opening." << std::endl;
+            return "";
+        }
+
+        std::vector<std::pair<std::string, std::string>> keys;
+        std::string line, key, status;
+        bool found = false;
+        std::string firstFreeKey = "";
+
+        // Čitanje fajla
+        while (std::getline(file, line)) {
+            std::istringstream iss(line);
+            if (std::getline(iss, key, ',') && std::getline(iss, status, ',')) {
+                if (!found && status == "slobodan") {
+                    firstFreeKey = key;
+                    status = "aktivan";
+                    found = true;
+                }
+                keys.emplace_back(key, status);
+            }
+        }
+        file.close();
+
+        // Ako nije pronađen slobodan ključ
+        if (firstFreeKey.empty()) {
+            std::cerr << "No free keys available." << std::endl;
+            return "";
+        }
+
+        // Ažuriranje fajla
+        std::ofstream outFile(fileName, std::ios::trunc);
+        if (!outFile.is_open()) {
+            std::cerr << "Error: Cannot write to the file!" << std::endl;
+            return "";
+        }
+
+        for (const auto& pair : keys) {
+            outFile << pair.first << "," << pair.second << "\n";
+        }
+        outFile.close();
+
+        return firstFreeKey;
     }
 
     private:
