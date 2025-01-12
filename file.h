@@ -132,6 +132,30 @@ public:
         return ""; 
     }
 
+    bool validateKey(const std::string& key) {
+    std::ifstream inputFile(namefile); // Otvori fajl sa ključevima
+    if (!inputFile) {
+        std::cerr << "Error: Could not open file for reading.\n";
+        return false;
+    }
+
+    std::string line;
+    while (std::getline(inputFile, line)) {
+        std::stringstream ss(line);
+        std::string organization, storedKey;
+
+        // Parsiraj organizaciju i ključ
+        if (std::getline(ss, organization, ',') && std::getline(ss, storedKey, ',')) {
+            if (storedKey == key) {
+                inputFile.close();
+                return true; // Ključ je pronađen
+            }
+        }
+    }
+
+         inputFile.close();
+         return false; // Ključ nije validan
+    }
     // Metoda za pronalaženje prvog slobodnog ključa i njegovo aktiviranje
     static std::string getFirstFreeKey(const std::string& fileName) {
         std::ifstream file(fileName);
