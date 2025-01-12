@@ -19,26 +19,7 @@ public:
     std::string getNamefile() const { return namefile; }
 
     // Metode za Usere
-    bool openFile()
-    {
-        std::ifstream file(namefile);
-        if (!file)
-        {
-            std::ofstream createFile(namefile);
-            if (!createFile)
-            {
-                std::cerr << "Error: Could not create file.\n";
-                return false;
-            }
-            createFile.close();
-            std::cout << "File created: " << namefile << "\n";
-            return true;
-        }
-        std::cout << "File opened: " << namefile << "\n";
-        file.close();
-        return true;
-    }
-
+    
     bool isEmpty()
     {
         std::ifstream file(namefile);
@@ -121,58 +102,53 @@ public:
         std::ifstream file(namefile);
         if (!file)
         {
-            std::cout << "File failed opening, close running file" << std::endl;
-            return false;
-        }
-        std::ofstream tempfile("temp.csv");
-        if (!tempfile)
-        {
-            std::cout << "File failed opening, close running file" << std::endl;
-            file.close();
+            std::cerr << "File failed opening, close running file" << std::endl;
             return false;
         }
 
-        bool succes = false;
-        std::string line;
+        std::vector<std::string> users;
+        std::string line, user, pass, role;
+        bool userDeleted = false;
+
         while (std::getline(file, line))
         {
-            std::stringstream ss(line);
-            std::string user, pass, role;
-
-            std::getline(ss, user, ',');
-            std::getline(ss, pass, ',');
-            std::getline(ss, role, ',');
-
-            if (user != username)
+            std::istringstream iss(line);
+            if (std::getline(iss, user, ',') && std::getline(iss, pass, ',') && std::getline(iss, role, ','))
             {
-                tempfile << line << "\n";
-            }
-            else
-            {
-                succes = true;
+                if (user == username)
+                {
+                    userDeleted = true;
+                }
+                else
+                {
+
+                    users.push_back(user + "," + pass + "," + role);
+                }
             }
         }
         file.close();
-        tempfile.close();
 
-        if (!succes)
+        if (!userDeleted)
         {
-            std::cout << "User is not found";
-            std::remove("temp.csv");
-            return succes;
-        }
-        if (std::remove(namefile.c_str()) != 0)
-        {
-            std::cout << "Error deleting original file";
+            std::cerr << "User not found or already inactive." << std::endl;
             return false;
         }
-        if (std::rename("temp.csv", namefile.c_str()) != 0)
+
+        std::ofstream outFile(namefile, std::ios::trunc);
+        if (!outFile)
         {
-            std::cout << "Error rename temp file";
+            std::cerr << "Error: Cannot write to the file!" << std::endl;
             return false;
         }
+
+        for (const auto &entry : users)
+        {
+            outFile << entry << "\n";
+        }
+        outFile.close();
+
         return true;
-    };
+    }
 
     std::string findRole(const std::string &username)
     {
@@ -201,6 +177,107 @@ public:
         file.close();
         return "";
     }
+    void allTickets()
+    {
+        std::ifstream inputFile("Ticket.csv");
+        std::string line;
+        if (!inputFile)
+        {
+            std::cout << "Error opening file." << std::endl;
+            return;
+        }
+
+        while (std::getline(inputFile, line))
+        {
+            std::stringstream ss(line);
+            std::string part;
+            std::vector<std::string> data;
+
+            while (std::getline(ss, part, ','))
+            {
+                data.push_back(part);
+            }
+
+            if (data.size() >= 5 && data[2] != "zatvoren")
+            {
+                std::cout << "ID: " << data[0] << std::endl
+                          << "Info: " << data[1] << std::endl
+                          << "Status: " << data[2] << std::endl
+                          << "Operator: " << data[3] << std::endl
+                          << "User: " << data[4] << std::endl;
+            }
+            std::cout << std::endl;
+        }
+
+        inputFile.close();
+    }
+    // Metoda za promjenu lozinke
+    bool changePassword(std::string oldPass, std::string newPass, std::string username)
+    {
+        if (login(username, oldPass))
+        {
+            std::ifstream file(namefile);
+            if (!file)
+            {
+                std::cout << "Error: Failed to open file. Make sure it exists and is not being used by another process." << std::endl;
+                return false;
+            }
+
+            std::vector<std::string> lines;
+            std::string line;
+            bool userFound = false;
+
+            while (std::getline(file, line))
+            {
+                std::stringstream ss(line);
+                std::string user, pass, role;
+
+                std::getline(ss, user, ',');
+                std::getline(ss, pass, ',');
+                std::getline(ss, role, ',');
+
+                if (user == username)
+                {
+                    lines.push_back(user + "," + newPass + "," + role);
+                    userFound = true;
+                }
+                else
+                {
+                    lines.push_back(line);
+                }
+            }
+            file.close();
+
+            if (!userFound)
+            {
+                std::cout << "Error: User not found in the file." << std::endl;
+                return false;
+            }
+
+            std::ofstream outFile(namefile, std::ios::trunc);
+            if (!outFile)
+            {
+                std::cout << "Error: Cannot write to the file!" << std::endl;
+                return false;
+            }
+
+            for (const auto &entry : lines)
+            {
+                outFile << entry << "\n";
+            }
+            outFile.close();
+
+            std::cout << "Password successfully changed." << std::endl;
+            return true;
+        }
+        else
+        {
+            std::cout << "Error: You have entered the wrong current password or user." << std::endl;
+            return false;
+        }
+    }
+
+    // Metode za Key.csv
 
     bool validateKey(const std::string &key)
     {
@@ -232,10 +309,10 @@ public:
         inputFile.close();
         return false; // Ključ nije validan
     }
-    // Metoda za pronalaženje prvog slobodnog ključa i njegovo aktiviranje
-    static std::string getFirstFreeKey(const std::string &fileName)
+
+    std::string getFirstFreeKey()
     {
-        std::ifstream file(fileName);
+        std::ifstream file(namefile);
         if (!file.is_open())
         {
             std::cerr << "File failed opening." << std::endl;
@@ -272,7 +349,7 @@ public:
         }
 
         // Ažuriranje fajla
-        std::ofstream outFile(fileName, std::ios::trunc);
+        std::ofstream outFile(namefile, std::ios::trunc);
         if (!outFile.is_open())
         {
             std::cerr << "Error: Cannot write to the file!" << std::endl;
@@ -348,6 +425,7 @@ public:
 
         return true;
     }
+    // Ostale metode...
     int getNumAdmin() const
     {
         std::ifstream userBase("User.csv", std::ios::in);
