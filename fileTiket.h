@@ -3,10 +3,9 @@
 #include <iostream>
 #include <vector>
 
-class file
-{
+
     // 2.1 Prikaz tiketa operatera
-public:
+
     void showOperatorTickets(const User &user)
     {
         std::ifstream inputFile("Ticket.csv");
@@ -30,15 +29,17 @@ public:
                 data.push_back(part);
             }
 
-            if (data[3] == user.getUsername()) // Operater cetvrti podatak tiketa
-            {
-                std::cout << "ID: " << data[0] << std::endl
-                          << "Info: " << data[1] << std::endl
-                          << "Status: " << data[2] << std::endl
-                          << "Operator: " << data[3] << std::endl
-                          << "User: " << data[4] << std::endl;
-                found = true;
-            }
+           if (data.size() >= 7 && data[3] == user.getUsername()) // Korisnik peti podatak tiketa
+                {
+                    std::cout << "ID: " << data[0] << std::endl
+                              << "Info: " << data[1] << std::endl
+                              << "Status: " << data[2] << std::endl
+                              << "Operator: " << data[3] << std::endl
+                              << "User: " << data[4] << std::endl
+                              << "Opening Date: " << data[5] << std::endl   
+                              << "Closing Date: " << data[6] << std::endl; 
+                    found = true;
+                }
         }
 
         if (!found)
@@ -48,4 +49,3 @@ public:
 
         inputFile.close();
     }
-};
