@@ -207,25 +207,25 @@ private:
     std::rename("TicketTemp.csv", "Ticket.csv"); //Pocetni fajl zamjenjujemo temp fajlom
 }
 
-    void inputTicketInformation() {
-    int id = generateID(); 
+//     void inputTicketInformation() {
+//     int id = generateID(); 
 
-    std::string status = "otvoren";  
-    std::string operater="";
-    std::string informacije, korisnik;
+//     std::string status = "otvoren";  
+//     std::string operater="";
+//     std::string informacije, korisnik;
 
-    std::cout << "ID tiketa: " << id << std::endl;
+//     std::cout << "ID tiketa: " << id << std::endl;
 
-    std::cout << "Unesite vase ime: ";
-    std::getline(std::cin, korisnik);
+//     std::cout << "Unesite vase ime: ";
+//     std::getline(std::cin, korisnik);
 
-    std::cout << "Unesite informacije o tiketu: ";
-    std::getline(std::cin, informacije);
+//     std::cout << "Unesite informacije o tiketu: ";
+//     std::getline(std::cin, informacije);
     
-    Ticket ticket(id, status, informacije, operater, korisnik);
-    saveTicketToFile(ticket); 
-    std::cout << "Tiket je uspjesno kreiran." << std::endl;
-}
+//     Ticket ticket(id, status, informacije, operater, korisnik);
+//     saveTicketToFile(ticket); 
+//     std::cout << "Tiket je uspjesno kreiran." << std::endl;
+// }
 
 
 
@@ -295,13 +295,15 @@ private:
                     data.push_back(part);
                 }
 
-                if (data[4] == user.getUsername()) // Korisnik peti podatak tiketa
+                if (data.size() >= 7 && data[4] == user.getUsername()) // Korisnik peti podatak tiketa
                 {
                     std::cout << "ID: " << data[0] << std::endl
                               << "Info: " << data[1] << std::endl
                               << "Status: " << data[2] << std::endl
                               << "Operator: " << data[3] << std::endl
-                              << "User: " << data[4] << std::endl;
+                              << "User: " << data[4] << std::endl
+                              << "Opening Date: " << data[5] << std::endl   
+                              << "Closing Date: " << data[6] << std::endl; 
                     found = true;
                 }
             }
