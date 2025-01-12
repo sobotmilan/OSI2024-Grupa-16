@@ -92,6 +92,7 @@ public:
         file.close();
         return false;
     }
+
     bool addUser(const std::string &username, const std::string &password, const std::string &role)
     {
         if (!userExist(username))
@@ -112,6 +113,64 @@ public:
             return true;
         }
     }
+
+    bool deleteUser(std::string username)
+    {
+        std::ifstream file(namefile);
+        if (!file)
+        {
+            std::cout << "File failed opening, close running file" << std::endl;
+            return false;
+        }
+        std::ofstream tempfile("temp.csv");
+        if (!tempfile)
+        {
+            std::cout << "File failed opening, close running file" << std::endl;
+            file.close();
+            return false;
+        }
+
+        bool succes = false;
+        std::string line;
+        while (std::getline(file, line))
+        {
+            std::stringstream ss(line);
+            std::string user, pass, role;
+
+            std::getline(ss, user, ',');
+            std::getline(ss, pass, ',');
+            std::getline(ss, role, ',');
+
+            if (user != username)
+            {
+                tempfile << line << "\n";
+            }
+            else
+            {
+                succes = true;
+            }
+        }
+        file.close();
+        tempfile.close();
+
+        if (!succes)
+        {
+            std::cout << "User is not found";
+            std::remove("temp.csv");
+            return succes;
+        }
+        if (std::remove(namefile.c_str()) != 0)
+        {
+            std::cout << "Error deleting original file";
+            return false;
+        }
+        if (std::rename("temp.csv", namefile.c_str()) != 0)
+        {
+            std::cout << "Error rename temp file";
+            return false;
+        }
+        return true;
+    };
 
     std::string findRole(const std::string &username)
     {
@@ -287,6 +346,30 @@ public:
 
         return true;
     }
+    int getNumAdmin() const
+    {
+        std::ifstream userBase("User.csv", std::ios::in);
+        if (userBase.is_open() == false)
+            throw("Nemoguce otvaranje baze korisnika.");
+
+        std::string currLine;
+        int numAd = 0;
+
+        while (getline(userBase, currLine))
+        {
+            std::istringstream ss(currLine);
+            std::string username, pass, role;
+
+            if (getline(ss, username, ',') && getline(ss, pass, ',') && getline(ss, role, ','))
+            {
+                if (role == "Admin")
+                {
+                    numAd++;
+                }
+            }
+        }
+        return numAd;
+    }
 
 private:
     bool userExist(std::string username)
@@ -311,7 +394,7 @@ private:
                 return true;
             }
         }
-        return false;
         file.close();
+        return false;
     };
 };
