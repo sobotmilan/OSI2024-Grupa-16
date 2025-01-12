@@ -10,7 +10,7 @@ private:
     std::string role;
 
 public:
-    User(std::string user, std::string pass, std::string role) : username(user), password(pass), role(role) {}
+    User(std::string user="", std::string pass="", std::string role="") : username(user), password(pass), role(role) {}
     ~User() {}
     void setUsername(std::string user) { this->username = user; }
     void setPassword(std::string pass) { this->password = pass; }
