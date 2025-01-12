@@ -3,7 +3,9 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include "Ticket.h"
 #include <vector>
+#include "User.h"
 
 class file
 {
