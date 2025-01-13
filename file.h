@@ -177,6 +177,59 @@ public:
         file.close();
         return "";
     }
+
+// Metoda koja provjerava da li organizacija već postoji u fajlu
+bool file::organizationExists(const std::string &organizationName)
+{
+    std::ifstream file(namefile);
+    if (!file)
+    {
+        std::cerr << "Error: Could not open file for reading.\n"; // zamijeniti sa throw
+        return false;
+    }
+
+    std::string line;
+    while (std::getline(file, line))
+    {
+        std::stringstream ss(line);
+        std::string currentOrganization, key;
+
+        if (std::getline(ss, currentOrganization, ',') && std::getline(ss, key, ',')) // drugi zarez suvisan
+        {
+            if (currentOrganization == organizationName)
+            {
+                file.close();
+                return true; // Organizacija postoji
+            }
+        }
+    }
+
+    file.close();
+    return false; // Organizacija ne postoji
+}
+
+// Metoda koja dodaje organizaciju u fajl, ako već ne postoji
+bool file::addOrganization(const std::string &organizationName, const std::string &key) // promjeniti povratni tip u "void"
+{
+    if (organizationExists(organizationName))
+    {
+        std::cout << "Organization already exists.\n";
+        return false; // Organizacija već postoji , ne vraća ništa
+    }
+
+    std::ofstream fileAppend(namefile, std::ios::app);
+    if (!fileAppend) // dio biblioteke <fstream> , zamjeniti sa fileAppend.is_open()
+    {
+        std::cerr << "Error: Could not open file for appending.\n"; // zamijeniti sa throw
+        return false;                                               // ne vraća ništa
+    }
+
+    fileAppend << organizationName << "," << key << "\n"; // Dodaj organizaciju
+    fileAppend.close();
+    std::cout << "Organization added successfully.\n";
+    return true; // ne vraća ništa
+}
+
     void allTickets()
     {
         std::ifstream inputFile("Ticket.csv");
@@ -278,7 +331,6 @@ public:
     }
 
     // Metode za Key.csv
-
     bool validateKey(const std::string &key)
     {
         std::ifstream inputFile(namefile); // Otvori fajl sa ključevima
@@ -480,5 +532,5 @@ private:
         }
         file.close();
         return false;
-    };
+    }
 };
