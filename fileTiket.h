@@ -3,8 +3,8 @@
 #include <iostream>
 #include <vector>
 
-class file
-{
+class fileTiket {
+
     // 2.1 Prikaz tiketa operatera
 public:
     void showOperatorTickets(const User &user)
@@ -132,10 +132,27 @@ public:
                 data.push_back(part);
             }
 
-            if (std::stoi(data[0]) == ticket.getID())
+            try
+        {
+            if (data.size() > 0 && !data[0].empty())
             {
-                data[1] = ticket.getStatus();
+                int ticketID = std::stoi(data[0]); // Pokušaj konverzije u int
+                if (ticketID == ticket.getID()) // Upoređivanje ID-a tiketa
+                {
+                    data[1] = ticket.getStatus(); // Ažuriranje statusa
+                }
             }
+        }
+        catch (const std::invalid_argument& e)
+        {
+            std::cout << "Invalid ticket ID: " << data[0] << std::endl;
+            continue; // Nastavi dalje ako je ID neispravan
+        }
+        catch (const std::out_of_range& e)
+        {
+            std::cout << "Ticket ID out of range: " << data[0] << std::endl;
+            continue;
+        }
 
             for (int i = 0; i < data.size(); ++i)
             {
