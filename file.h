@@ -19,7 +19,7 @@ public:
     std::string getNamefile() const { return namefile; }
 
     // Metode za Usere
-    
+
     bool isEmpty()
     {
         std::ifstream file(namefile);
@@ -264,8 +264,7 @@ bool file::addOrganization(const std::string &organizationName, const std::strin
 
         inputFile.close();
     }
-  
-    // Metoda za promjenu lozinke
+
     bool changePassword(std::string oldPass, std::string newPass, std::string username)
     {
         if (login(username, oldPass))
@@ -502,6 +501,10 @@ bool file::addOrganization(const std::string &organizationName, const std::strin
             }
         }
         return numAd;
+    }
+
+    bool isExisting(std::string username){
+        return userExist(username);
     }
 
 private:
