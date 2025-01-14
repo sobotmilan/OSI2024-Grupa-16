@@ -130,9 +130,8 @@ void menuForAdmin(file User, Organizacija org, std::string currentUser)
                     std::string key;
                     if (org.unosKljuča())  // Unos ključa za aktivaciju
                     {
-                        std::cout << "Unesite ključ za aktivaciju komercijalne verzije: ";
-                        std::cin >> key;
-
+                        std::string key = org.getKljuc();
+                        
                         if (User.validateKey(key))  // Provjera validnosti ključa
                         {
                             std::cout << "Ključ je validan!" << std::endl;
