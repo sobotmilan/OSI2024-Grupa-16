@@ -8,19 +8,23 @@
 #include "User.h"
 #include "Operater.h"
 #include <chrono>
+#include "Organizacija.h"
+
 using namespace std;
 
 class file
 {
 private:
     string namefile;
+    std::vector<User> users;
 
 public:
     file() : namefile("") {}
     file(const string &namefile) : namefile(namefile) {}
     void setNamefile(const string &namefile) { this->namefile = namefile; }
     string getNamefile() const { return namefile; }
-
+    int numOpsInOrg() const;  
+    
     // Metode za Usere
 
     bool isEmpty()
@@ -502,6 +506,19 @@ public:
         }
         return numAd;
     }
+
+    bool canAddUser(const User& user) {
+    if (getNumAdmin() >= 1) {  // Koristi getNumAdmin()
+        std::cerr << "Limit za administratore je dostignut!\n";
+        return false;
+    }
+    if (numOpsInOrg() >= 2) {  // Koristi numOpsInOrg()
+        std::cerr << "Limit za operatere je dostignut!\n";
+        return false;
+    }
+    users.push_back(user);
+    return true;
+}
 
     bool isExisting(string username)
     {
