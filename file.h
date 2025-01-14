@@ -280,14 +280,16 @@ public:
             {
                 data.push_back(part);
             }
-
-            if (data.size() >= 5 && data[2] != "zatvoren")
+            cout << endl;
+            if (data.size() >= 7 && data[2] != "zatvoren")
             {
                 cout << "ID: " << data[0] << endl
                      << "Info: " << data[1] << endl
                      << "Status: " << data[2] << endl
                      << "Operator: " << data[3] << endl
-                     << "User: " << data[4] << endl;
+                     << "User: " << data[4] << endl
+                     << "Datum open: " << data[5] << endl
+                     << "Datum end: " << data[6] << endl;
             }
             cout << endl;
         }

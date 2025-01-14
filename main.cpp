@@ -31,6 +31,12 @@ int main()
             std::cin >> adminUsername;
             std::cout << "Unesite lozinku za admina: " << std::endl;
             std::cin >> adminPassword;
+            while (!passIsStrong(adminPassword))
+            {
+                cout << "Nedovoljno jaka lozinka, pokusajte ponovo: ";
+                cin.ignore();
+                std::cin >> adminPassword;
+            }
         } while (User.isExisting(adminUsername));
 
         User.addUser(adminUsername, adminPassword, "Admin");

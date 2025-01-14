@@ -43,6 +43,20 @@ void menuForAdmin(file User, Organizacija org, std::string currentUser)
                 std::cout << "2. Operatorski nalog " << std::endl;
                 std::cout << "3. Administratorski nalog" << std::endl;
                 std::cin >> count;
+                std::string role;
+
+                if (count == 1)
+                {
+                    role = "User";
+                }
+                else if (count == 2)
+                {
+                    role = "Operater";
+                }
+                else if (count == 3)
+                {
+                    role = "Admin";
+                }
 
                 std::string verzija = org.provjeriVerziju();
                 bool dozvola;
@@ -54,13 +68,13 @@ void menuForAdmin(file User, Organizacija org, std::string currentUser)
                     }
                     else if (count == 2)
                     {
-                        if (User.numOpsInOrg() <= 2) // treba izmijeniti na numoperatora
+                        if (User.numOpsInOrg() < 2)
                         {
-                            dozvola = false;
+                            dozvola = true;
                         }
                         else
                         {
-                            dozvola = true;
+                            dozvola = false;
                         }
                     }
                     else if (count == 3)
@@ -74,7 +88,7 @@ void menuForAdmin(file User, Organizacija org, std::string currentUser)
                 }
                 if ((verzija == "Komercijalna verzija") || dozvola == true)
                 {
-                    std::string username, password, role;
+                    std::string username, password;
                     int count;
                     do
                     {
@@ -89,18 +103,6 @@ void menuForAdmin(file User, Organizacija org, std::string currentUser)
                             std::cin >> password;
                         }
                     } while (User.isExisting(username) && count != 1 && count != 2 && count != 3);
-                    if (count == 1)
-                    {
-                        role = "User";
-                    }
-                    else if (count == 2)
-                    {
-                        role = "Operater";
-                    }
-                    else if (count == 3)
-                    {
-                        role = "Admin";
-                    }
                     User.addUser(username, password, role);
                 }
             }
