@@ -16,10 +16,30 @@ private:
     std::string informacije;
     std::string operater;
     std::string korisnik;
+    std::string datumOtvaranja;
+    std::string datumZatvaranja;
 
 public:
-    explicit Ticket(int id, const std::string &op, const std::string &kor, std::string stat, std::string info)
-        : ID(id), status(stat), informacije(info), operater(op), korisnik(kor) {}
+    explicit  Ticket(int id, const std::string &status, const std::string &info, const std::string &operater,
+           const std::string &korisnik, const std::string &datumOt, const std::string &datumZat)
+        : ID(id), status(status), informacije(info), operater(operater), korisnik(korisnik),
+          datumOtvaranja(datumOt), datumZatvaranja(datumZat) {}
+    
+    Ticket &operator=(const Ticket &other)
+    {
+        if (this == &other) 
+            return *this;
+
+        ID = other.ID;
+        status = other.status;
+        informacije = other.informacije;
+        operater = other.operater;
+        korisnik = other.korisnik;
+        datumOtvaranja = other.datumOtvaranja;
+        datumZatvaranja = other.datumZatvaranja;
+
+        return *this;
+    }
 
     int getID() const
     {
@@ -44,6 +64,36 @@ public:
     std::string getKorisnik() const
     {
         return this->korisnik;
+    }
+
+    std::string getDatumOtvaranja() const
+    {
+        return this->datumOtvaranja;
+    }
+
+    std::string getDatumZatvaranja() const
+    {
+        return this->datumZatvaranja;
+    }
+
+      void setOperater(const std::string &noviOperater)
+    {
+        operater = noviOperater;
+    }
+
+    void setDatumZatvaranja(const std::string &datum)
+    {
+        datumZatvaranja = datum;
+    }
+
+    void setInfo(const std::string &noveInfo)
+    {
+        informacije = noveInfo;
+    }
+
+    void setStatus(const std::string &noviStatus)
+    {
+        status = noviStatus;
     }
 };
 // posto nemamo funkciju koja ce citati tikete i smjestiti ih u neku STL strukturu, citacemo direktno iz baze podataka koristenjem klasa i funkcija u okviru <fstream>,<iomanip>,<string> itd, i tako stvoriti rezultat. Ovo je samo prekopirana i blago modifikovana implementacija mog nacina citanja broja tiketa iz Ticket.csv koju sam koristio u Operater.h prilikom trazenja operatera sa najmanjim brojem tiketa.
