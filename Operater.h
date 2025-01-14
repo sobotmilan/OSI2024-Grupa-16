@@ -86,6 +86,68 @@ public:
     {
         return ((this->numTickets != other.numTickets) || (this->getUsername() != other.getUsername()));
     }
+    int getTickets() const
+    {
+        int result = 0;
+
+        ifstream userBase("User.csv", ios::in);
+        if (!userBase.is_open())
+        {
+            throw runtime_error("Nemoguce otvaranje baze korisnika.");
+        }
+
+        bool isOperater = false;
+        string userBaseLine;
+        while (getline(userBase, userBaseLine))
+        {
+            istringstream ss(userBaseLine);
+            string username, pass, role;
+
+            if (getline(ss, username, ',') && getline(ss, pass, ',') && getline(ss, role, ','))
+            {
+                if (role == "Operater" && username == this->getUsername())
+                {
+                    isOperater = true;
+                    break;
+                }
+            }
+        }
+
+        userBase.close();
+
+        if (!isOperater)
+        {
+            return 0;
+        }
+
+        ifstream ticketBase("Ticket.csv", ios::in);
+        if (!ticketBase.is_open())
+        {
+            throw runtime_error("Nemoguce otvaranje baze tiketa.");
+        }
+
+        string ticketBaseLine;
+        while (getline(ticketBase, ticketBaseLine))
+        {
+            istringstream ss(ticketBaseLine);
+            string id, status, info, ope, kor, datumo, datumz;
+
+            if (getline(ss, id, ',') && getline(ss, status, ',') && getline(ss, info, ',') &&
+                getline(ss, ope, ',') && getline(ss, kor, ',') &&
+                getline(ss, datumo, ','))
+            {
+                getline(ss, datumz, ',');
+
+                if (ope == this->getUsername())
+                {
+                    result++;
+                }
+            }
+        }
+
+        ticketBase.close();
+        return result;
+    }
 };
 
 std::ostream &operator<<(std::ostream &os, const Operater &op)
@@ -205,28 +267,3 @@ void writeOpsToCSV(const std::vector<Operater> &operators)
     std::cout << "Svi operateri su uspjesno upisani u bazu.\n";
 }
 
-int numOpsInOrg()
-{
-    ifstream userBase("User.csv", ios::in);
-    if (userBase.is_open() == false)
-        throw("Nemoguce otvaranje baze korisnika.");
-
-    string currLine;
-    int numOp = 0;
-
-    while (getline(userBase, currLine))
-    {
-        istringstream ss(currLine);
-        string username, pass, role;
-
-        if (getline(ss, username, ',') && getline(ss, pass, ',') && getline(ss, role, ','))
-        {
-            if (role == "Operater")
-            {
-                numOp++;
-            }
-        }
-    }
-
-    return numOp;
-}

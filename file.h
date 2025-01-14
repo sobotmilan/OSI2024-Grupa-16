@@ -179,57 +179,57 @@ public:
         return "";
     }
 
-// Metoda koja provjerava da li organizacija već postoji u fajlu
-bool file::organizationExists(const std::string &organizationName)
-{
-    std::ifstream file(namefile);
-    if (!file)
+    // Metoda koja provjerava da li organizacija već postoji u fajlu
+    bool organizationExists(const std::string &organizationName)
     {
-        std::cerr << "Error: Could not open file for reading.\n"; // zamijeniti sa throw
-        return false;
-    }
-
-    std::string line;
-    while (std::getline(file, line))
-    {
-        std::stringstream ss(line);
-        std::string currentOrganization, key;
-
-        if (std::getline(ss, currentOrganization, ',') && std::getline(ss, key, ',')) // drugi zarez suvisan
+        std::ifstream file(namefile);
+        if (!file)
         {
-            if (currentOrganization == organizationName)
+            std::cerr << "Error: Could not open file for reading.\n"; // zamijeniti sa throw
+            return false;
+        }
+
+        std::string line;
+        while (std::getline(file, line))
+        {
+            std::stringstream ss(line);
+            std::string currentOrganization, key;
+
+            if (std::getline(ss, currentOrganization, ',') && std::getline(ss, key, ',')) // drugi zarez suvisan
             {
-                file.close();
-                return true; // Organizacija postoji
+                if (currentOrganization == organizationName)
+                {
+                    file.close();
+                    return true; // Organizacija postoji
+                }
             }
         }
+
+        file.close();
+        return false; // Organizacija ne postoji
     }
 
-    file.close();
-    return false; // Organizacija ne postoji
-}
-
-// Metoda koja dodaje organizaciju u fajl, ako već ne postoji
-bool file::addOrganization(const std::string &organizationName, const std::string &key) // promjeniti povratni tip u "void"
-{
-    if (organizationExists(organizationName))
+    // Metoda koja dodaje organizaciju u fajl, ako već ne postoji
+    bool addOrganization(const std::string &organizationName, const std::string &key) // promjeniti povratni tip u "void"
     {
-        std::cout << "Organization already exists.\n";
-        return false; // Organizacija već postoji , ne vraća ništa
-    }
+        if (organizationExists(organizationName))
+        {
+            std::cout << "Organization already exists.\n";
+            return false; // Organizacija već postoji , ne vraća ništa
+        }
 
-    std::ofstream fileAppend(namefile, std::ios::app);
-    if (!fileAppend) // dio biblioteke <fstream> , zamjeniti sa fileAppend.is_open()
-    {
-        std::cerr << "Error: Could not open file for appending.\n"; // zamijeniti sa throw
-        return false;                                               // ne vraća ništa
-    }
+        std::ofstream fileAppend(namefile, std::ios::app);
+        if (!fileAppend) // dio biblioteke <fstream> , zamjeniti sa fileAppend.is_open()
+        {
+            std::cerr << "Error: Could not open file for appending.\n"; // zamijeniti sa throw
+            return false;                                               // ne vraća ništa
+        }
 
-    fileAppend << organizationName << "," << key << "\n"; // Dodaj organizaciju
-    fileAppend.close();
-    std::cout << "Organization added successfully.\n";
-    return true; // ne vraća ništa
-}
+        fileAppend << organizationName << "," << key << "\n"; // Dodaj organizaciju
+        fileAppend.close();
+        std::cout << "Organization added successfully.\n";
+        return true; // ne vraća ništa
+    }
 
     void allTickets()
     {
@@ -504,7 +504,8 @@ bool file::addOrganization(const std::string &organizationName, const std::strin
         return numAd;
     }
 
-    bool isExisting(std::string username){
+    bool isExisting(std::string username)
+    {
         return userExist(username);
     }
 
@@ -535,164 +536,187 @@ private:
         return false;
     }
 
-       public:
+public:
+    void updateOperatorInFile(const Ticket &ticket)
+    {
+        std::ifstream inputFile("Ticket.csv");
+        std::ofstream outputFile("Ticket_temp.csv");
+        std::string line;
+        bool found = false;
 
- void updateOperatorInFile(const Ticket& ticket) {
-    std::ifstream inputFile("Ticket.csv");
-    std::ofstream outputFile("Ticket_temp.csv");
-    std::string line;
-    bool found = false;
-
-    if (!inputFile.is_open() || !outputFile.is_open()) {
-        std::cout << "Error opening file." << std::endl;
-        return;
-    }
-
-    while (std::getline(inputFile, line)) {
-        std::stringstream ss(line);
-        std::string token;
-        std::vector<std::string> data;
-
-        while (std::getline(ss, token, ',')) {
-            data.push_back(token);
+        if (!inputFile.is_open() || !outputFile.is_open())
+        {
+            std::cout << "Error opening file." << std::endl;
+            return;
         }
 
-        try
+        while (std::getline(inputFile, line))
         {
-            if (!data.empty() && std::stoi(data[0]) == ticket.getID())
+            std::stringstream ss(line);
+            std::string token;
+            std::vector<std::string> data;
+
+            while (std::getline(ss, token, ','))
             {
-                data[1] = "dodijeljen operateru"; 
-                data[3] = ticket.getOperater();  
-                found = true;
+                data.push_back(token);
             }
+
+            try
+            {
+                if (!data.empty() && std::stoi(data[0]) == ticket.getID())
+                {
+                    data[1] = "dodijeljen operateru";
+                    data[3] = ticket.getOperater();
+                    found = true;
+                }
+            }
+            catch (const std::invalid_argument &e)
+            {
+                std::cout << "Invalid ID found in the CSV: " << data[0] << std::endl;
+                continue;
+            }
+
+            for (size_t i = 0; i < data.size(); ++i)
+            {
+                outputFile << data[i];
+                if (i < data.size() - 1)
+                {
+                    outputFile << ",";
+                }
+            }
+            outputFile << "\n";
         }
-        catch (const std::invalid_argument &e)
+
+        inputFile.close();
+        outputFile.close();
+
+        std::remove("Ticket.csv");
+        std::rename("Ticket_temp.csv", "Ticket.csv");
+
+        if (found)
         {
-            std::cout << "Invalid ID found in the CSV: " << data[0] << std::endl;
-            continue; 
+            std::cout << "Ticket with ID: " << ticket.getID() << " successfully updated." << std::endl;
         }
+        else
+        {
+            std::cout << "Ticket with ID: " << ticket.getID() << " not found." << std::endl;
+        }
+    }
 
-        for (size_t i = 0; i < data.size(); ++i) {
-            outputFile << data[i];
-            if (i < data.size() - 1) {
-                outputFile << ",";
+    Ticket unosInformacijaOTiketu(const User &user)
+    {
+        int id = generateID();
+
+        std::string status = "otvoren";
+        std::string operater = "";
+        std::string informacije, korisnik;
+        std::string datumOtvaranja, datumZatvaranja = "u toku";
+
+        korisnik = user.getUsername();
+
+        auto now = std::chrono::system_clock::now();
+        auto time_t_now = std::chrono::system_clock::to_time_t(now);
+        char buffer[20];
+        std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", std::localtime(&time_t_now));
+        datumOtvaranja = buffer;
+
+        std::cout << "ID tiketa: " << id << std::endl;
+
+        do
+        {
+            std::cout << "Enter ticket information: ";
+            std::getline(std::cin, informacije);
+            if (informacije.empty())
+            {
+                std::cout << "Informations can't be empty. Please try again." << std::endl;
             }
-        }
-        outputFile << "\n";
+        } while (informacije.empty());
+
+        Ticket ticket(id, status, informacije, operater, korisnik, datumOtvaranja, datumZatvaranja);
+        upisTiketaUFajl(ticket);
+        std::cout << "Ticket successfully created." << std::endl;
+
+        return ticket;
     }
 
-    inputFile.close();
-    outputFile.close();
-    
-    std::remove("Ticket.csv");
-    std::rename("Ticket_temp.csv", "Ticket.csv");
+    void updateTicketClosureDateInFile(const Ticket &ticket)
+    {
+        std::ifstream inputFile("Ticket.csv");
+        std::ofstream outputFile("Ticket_temp.csv");
+        std::string line;
+        bool found = false;
 
-    if (found) {
-        std::cout << "Ticket with ID: " << ticket.getID() << " successfully updated." << std::endl;
-    } else {
-        std::cout << "Ticket with ID: " << ticket.getID() << " not found." << std::endl;
-    }
-}
-
-    Ticket unosInformacijaOTiketu(const User& user) {
-    int id = generateID(); 
-
-    std::string status = "otvoren";  
-    std::string operater="";
-    std::string informacije, korisnik;
-    std::string datumOtvaranja, datumZatvaranja = "u toku";
-
-    korisnik = user.getUsername();
-
-    auto now = std::chrono::system_clock::now();
-    auto time_t_now = std::chrono::system_clock::to_time_t(now);
-    char buffer[20];
-    std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", std::localtime(&time_t_now));
-    datumOtvaranja = buffer;
-    
-    std::cout << "ID tiketa: " << id << std::endl;
-
-    do {
-        std::cout << "Enter ticket information: ";
-        std::getline(std::cin, informacije);
-        if (informacije.empty()) {
-            std::cout << "Informations can't be empty. Please try again." << std::endl;
-        }
-    } while (informacije.empty());
-    
-    
-    Ticket ticket(id, status, informacije, operater, korisnik, datumOtvaranja, datumZatvaranja);
-    upisTiketaUFajl(ticket); 
-    std::cout << "Ticket successfully created." << std::endl;
-
-    return ticket;
-}
-
-void updateTicketClosureDateInFile(const Ticket& ticket) {
-    std::ifstream inputFile("Ticket.csv");
-    std::ofstream outputFile("Ticket_temp.csv");
-    std::string line;
-    bool found = false;
-
-    if (!inputFile.is_open() || !outputFile.is_open()) {
-        std::cout << "Error opening file." << std::endl;
-        return;
-    }
-
-    while (std::getline(inputFile, line)) {
-        std::stringstream ss(line);
-        std::string part;
-        std::vector<std::string> data;
-
-        // Parse the current line of the CSV file
-        while (std::getline(ss, part, ',')) {
-            data.push_back(part);
+        if (!inputFile.is_open() || !outputFile.is_open())
+        {
+            std::cout << "Error opening file." << std::endl;
+            return;
         }
 
-       try {
-        if (!data.empty() && std::stoi(data[0]) == ticket.getID()) {
-            // Check if the data vector has enough elements to access index 6 (datumZatvaranja)
-            if (data.size() >= 7) {
-                data[6] = ticket.getDatumZatvaranja();  // Update the closing date (index 6)
-            } else {
-                std::cerr << "Invalid data format, not enough fields in CSV line." << std::endl;
+        while (std::getline(inputFile, line))
+        {
+            std::stringstream ss(line);
+            std::string part;
+            std::vector<std::string> data;
+
+            // Parse the current line of the CSV file
+            while (std::getline(ss, part, ','))
+            {
+                data.push_back(part);
             }
-            found = true;
-        }
-    } catch (const std::invalid_argument &e) {
-        std::cout << "Invalid ID found in the CSV: " << data[0] << std::endl;
-        continue; // Skip to the next line
-    }
 
-        // Write the row to the temporary file
-        for (size_t i = 0; i < data.size(); ++i) {
-            outputFile << data[i];
-            if (i < data.size() - 1) {
-                outputFile << ",";
+            try
+            {
+                if (!data.empty() && std::stoi(data[0]) == ticket.getID())
+                {
+                    // Check if the data vector has enough elements to access index 6 (datumZatvaranja)
+                    if (data.size() >= 7)
+                    {
+                        data[6] = ticket.getDatumZ(); // Update the closing date (index 6)
+                    }
+                    else
+                    {
+                        std::cerr << "Invalid data format, not enough fields in CSV line." << std::endl;
+                    }
+                    found = true;
+                }
             }
+            catch (const std::invalid_argument &e)
+            {
+                std::cout << "Invalid ID found in the CSV: " << data[0] << std::endl;
+                continue; // Skip to the next line
+            }
+
+            // Write the row to the temporary file
+            for (size_t i = 0; i < data.size(); ++i)
+            {
+                outputFile << data[i];
+                if (i < data.size() - 1)
+                {
+                    outputFile << ",";
+                }
+            }
+            outputFile << "\n";
         }
-        outputFile << "\n";
+
+        inputFile.close();
+        outputFile.close();
+
+        // Replace the old file with the new one
+        std::remove("Ticket.csv");
+        std::rename("Ticket_temp.csv", "Ticket.csv");
+
+        if (found)
+        {
+            std::cout << "Ticket with ID: " << ticket.getID() << " successfully updated." << std::endl;
+        }
+        else
+        {
+            std::cout << "Ticket with ID: " << ticket.getID() << " not found." << std::endl;
+        }
     }
-
-    inputFile.close();
-    outputFile.close();
-
-    // Replace the old file with the new one
-    std::remove("Ticket.csv");
-    std::rename("Ticket_temp.csv", "Ticket.csv");
-
-    if (found) {
-        std::cout << "Ticket with ID: " << ticket.getID() << " successfully updated." << std::endl;
-    } else {
-        std::cout << "Ticket with ID: " << ticket.getID() << " not found." << std::endl;
-    }
-}
-
-
-
 
 private:
-    void upisTiketaUFajl(const Ticket &ticket) 
+    void upisTiketaUFajl(const Ticket &ticket)
     {
         const std::string namefile = "Ticket.csv";
         std::ofstream fileOut(namefile, std::ios::app); // Otvaranje fajla u režimu dodavanja
@@ -707,13 +731,13 @@ private:
                 << ticket.getInfo() << ","
                 << ticket.getOperater() << ","
                 << ticket.getKorisnik() << ","
-                << ticket.getDatumOtvaranja() << ","
-                << ticket.getDatumZatvaranja() << "\n";
+                << ticket.getDatumO() << ","
+                << ticket.getDatumZ() << "\n";
 
         fileOut.close();
     }
 
-    int generateID() //Metoda koja cita i dodjeljuje jeinstveni ID tiketu
+    int generateID() // Metoda koja cita i dodjeljuje jeinstveni ID tiketu
     {
         std::ifstream inputFile("id.txt");
         int currentID = 0;
@@ -736,53 +760,53 @@ private:
         return -1;
     }
 
-    //1.3 Prikaz tiketa korisnika
-        void showUserTickets(const User &user)
+    // 1.3 Prikaz tiketa korisnika
+    void showUserTickets(const User &user)
+    {
+        std::ifstream inputFile("Ticket.csv");
+        std::string line;
+        bool found = false;
+
+        if (!inputFile)
         {
-            std::ifstream inputFile("Ticket.csv");
-            std::string line;
-            bool found = false;
-
-            if (!inputFile)
-            {
-                std::cout << "Error opening file." << std::endl;
-                return;
-            }
-
-            while (std::getline(inputFile, line))
-            {
-                std::stringstream ss(line);
-                std::string part;
-                std::vector<std::string> data;
-
-                while (std::getline(ss, part, ','))
-                {
-                    data.push_back(part);
-                }
-
-                if (data.size() >= 7 && data[4] == user.getUsername()) // Korisnik peti podatak tiketa
-                {
-                    std::cout << "ID: " << data[0] << std::endl
-                              << "Info: " << data[1] << std::endl
-                              << "Status: " << data[2] << std::endl
-                              << "Operator: " << data[3] << std::endl
-                              << "User: " << data[4] << std::endl
-                              << "Opening Date: " << data[5] << std::endl   
-                              << "Closing Date: " << data[6] << std::endl; 
-                    found = true;
-                }
-            }
-
-            if (!found)
-            {
-                std::cout << "No tickets found." << std::endl;
-            }
-
-            inputFile.close();
+            std::cout << "Error opening file." << std::endl;
+            return;
         }
 
+        while (std::getline(inputFile, line))
+        {
+            std::stringstream ss(line);
+            std::string part;
+            std::vector<std::string> data;
+
+            while (std::getline(ss, part, ','))
+            {
+                data.push_back(part);
+            }
+
+            if (data.size() >= 7 && data[4] == user.getUsername()) // Korisnik peti podatak tiketa
+            {
+                std::cout << "ID: " << data[0] << std::endl
+                          << "Info: " << data[1] << std::endl
+                          << "Status: " << data[2] << std::endl
+                          << "Operator: " << data[3] << std::endl
+                          << "User: " << data[4] << std::endl
+                          << "Opening Date: " << data[5] << std::endl
+                          << "Closing Date: " << data[6] << std::endl;
+                found = true;
+            }
+        }
+
+        if (!found)
+        {
+            std::cout << "No tickets found." << std::endl;
+        }
+
+        inputFile.close();
+    }
+
     // 1.4 dopuna informacija tiketa
-    
+
     void addNewInfoToTicket(Ticket &ticket)
     {
         std::cout << "Current information: " << ticket.getInfo() << std::endl;
@@ -819,27 +843,27 @@ private:
                 data.push_back(part);
             }
 
-           if (data.empty()) 
-        {
-            continue; // Preskoči prazan red
-        }
-
-        try
-        {
-            int ticketID = std::stoi(data[0]);
-            if (ticketID == ticket.getID()) 
+            if (data.empty())
             {
-                data[2] = ticket.getInfo(); 
+                continue; // Preskoči prazan red
             }
-        }
-        catch (const std::invalid_argument& e)
-        {
-            continue; 
-        }
-        catch (const std::out_of_range& e)
-        {
-            continue; 
-        }
+
+            try
+            {
+                int ticketID = std::stoi(data[0]);
+                if (ticketID == ticket.getID())
+                {
+                    data[2] = ticket.getInfo();
+                }
+            }
+            catch (const std::invalid_argument &e)
+            {
+                continue;
+            }
+            catch (const std::out_of_range &e)
+            {
+                continue;
+            }
 
             for (int i = 0; i < data.size(); i++)
             {
@@ -859,7 +883,7 @@ private:
         std::rename("TicketTemp.csv", "Ticket.csv");
     }
 
-        // 2.1 Prikaz tiketa operatera
+    // 2.1 Prikaz tiketa operatera
 
     void showOperatorTickets(const User &user)
     {
@@ -884,17 +908,17 @@ private:
                 data.push_back(part);
             }
 
-           if (data.size() >= 7 && data[3] == user.getUsername()) 
-                {
-                    std::cout << "ID: " << data[0] << std::endl
-                              << "Info: " << data[1] << std::endl
-                              << "Status: " << data[2] << std::endl
-                              << "Operator: " << data[3] << std::endl
-                              << "User: " << data[4] << std::endl
-                              << "Opening Date: " << data[5] << std::endl   
-                              << "Closing Date: " << data[6] << std::endl; 
-                    found = true;
-                }
+            if (data.size() >= 7 && data[3] == user.getUsername())
+            {
+                std::cout << "ID: " << data[0] << std::endl
+                          << "Info: " << data[1] << std::endl
+                          << "Status: " << data[2] << std::endl
+                          << "Operator: " << data[3] << std::endl
+                          << "User: " << data[4] << std::endl
+                          << "Opening Date: " << data[5] << std::endl
+                          << "Closing Date: " << data[6] << std::endl;
+                found = true;
+            }
         }
 
         if (!found)
@@ -905,10 +929,9 @@ private:
         inputFile.close();
     }
 
-     // 2.2 Promjena statusa tiketa
+    // 2.2 Promjena statusa tiketa
 
-     public:
-     
+public:
     void changeTicketStatus(Ticket &ticket)
     {
 
@@ -959,9 +982,9 @@ private:
                 auto time_t_now = std::chrono::system_clock::to_time_t(now);
                 char buffer[20];
                 std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", std::localtime(&time_t_now));
-                ticket.setDatumZatvaranja(buffer);
+                ticket.setDatumZ(buffer);
                 updateTicketClosureDateInFile(ticket);
-                
+
                 return;
             }
         }
@@ -980,7 +1003,6 @@ private:
     }
 
 private:
-
     void updateTicketStatusInFile(const Ticket &ticket)
     {
         std::ifstream inputFile("Ticket.csv");
@@ -1006,26 +1028,26 @@ private:
             }
 
             try
-        {
-            if (data.size() > 0 && !data[0].empty())
             {
-                int ticketID = std::stoi(data[0]); // Pokušaj konverzije u int
-                if (ticketID == ticket.getID()) // Upoređivanje ID-a tiketa
+                if (data.size() > 0 && !data[0].empty())
                 {
-                    data[1] = ticket.getStatus(); // Ažuriranje statusa
+                    int ticketID = std::stoi(data[0]); // Pokušaj konverzije u int
+                    if (ticketID == ticket.getID())    // Upoređivanje ID-a tiketa
+                    {
+                        data[1] = ticket.getStatus(); // Ažuriranje statusa
+                    }
                 }
             }
-        }
-        catch (const std::invalid_argument& e)
-        {
-            std::cout << "Invalid ticket ID: " << data[0] << std::endl;
-            continue; // Nastavi dalje ako je ID neispravan
-        }
-        catch (const std::out_of_range& e)
-        {
-            std::cout << "Ticket ID out of range: " << data[0] << std::endl;
-            continue;
-        }
+            catch (const std::invalid_argument &e)
+            {
+                std::cout << "Invalid ticket ID: " << data[0] << std::endl;
+                continue; // Nastavi dalje ako je ID neispravan
+            }
+            catch (const std::out_of_range &e)
+            {
+                std::cout << "Ticket ID out of range: " << data[0] << std::endl;
+                continue;
+            }
 
             for (int i = 0; i < data.size(); ++i)
             {
@@ -1069,7 +1091,4 @@ private:
             std::cout << "No status changes are allowed for the current state." << std::endl;
         }
     }
-
-
-
 };
