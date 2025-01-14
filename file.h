@@ -187,7 +187,7 @@ public:
         ifstream file(namefile);
         if (!file)
         {
-            cerr << "Error: Could not open file for reading.\n"; // zamijeniti sa throw
+            throw "Error: Could not open file for reading.\n";
             return false;
         }
 
@@ -197,7 +197,7 @@ public:
             stringstream ss(line);
             string currentOrganization, key;
 
-            if (getline(ss, currentOrganization, ',') && getline(ss, key, ',')) // drugi zarez suvisan
+            if (getline(ss, currentOrganization, ',') && getline(ss, key))
             {
                 if (currentOrganization == organizationName)
                 {
@@ -212,25 +212,22 @@ public:
     }
 
     // Metoda koja dodaje organizaciju u fajl, ako već ne postoji
-    bool addOrganization(const string &organizationName, const string &key) // promjeniti povratni tip u "void"
+    void addOrganization(const string &organizationName, const string &key) 
     {
         if (organizationExists(organizationName))
         {
             cout << "Organization already exists.\n";
-            return false; // Organizacija već postoji , ne vraća ništa
         }
 
         ofstream fileAppend(namefile, ios::app);
-        if (!fileAppend) // dio biblioteke <fstream> , zamjeniti sa fileAppend.is_open()
+        if (!fileAppend.is_open()) 
         {
-            cerr << "Error: Could not open file for appending.\n"; // zamijeniti sa throw
-            return false;                                          // ne vraća ništa
+            throw "Error: Could not open file for appending.\n";                                       
         }
 
         fileAppend << organizationName << "," << key << "\n"; // Dodaj organizaciju
         fileAppend.close();
         cout << "Organization added successfully.\n";
-        return true; // ne vraća ništa
     }
 
     void allTickets()
@@ -471,7 +468,7 @@ public:
         inputFile.close();
         tempFile.close();
 
-        // Zameni originalni fajl privremenim fajlom
+        // Zamijeni originalni fajl privremenim fajlom
         if (remove(namefile.c_str()) != 0 || rename("temp.csv", namefile.c_str()) != 0)
         {
             cerr << "Error: Could not replace the original file.\n";
