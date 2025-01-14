@@ -23,7 +23,31 @@ public:
     file(const string &namefile) : namefile(namefile) {}
     void setNamefile(const string &namefile) { this->namefile = namefile; }
     string getNamefile() const { return namefile; }
-    int numOpsInOrg() const;
+    int numOpsInOrg() const
+    {
+        ifstream userBase("User.csv", ios::in);
+        if (userBase.is_open() == false)
+            throw("Nemoguce otvaranje baze korisnika.");
+
+        string currLine;
+        int numOp = 0;
+
+        while (getline(userBase, currLine))
+        {
+            istringstream ss(currLine);
+            string username, pass, role;
+
+            if (getline(ss, username, ',') && getline(ss, pass, ',') && getline(ss, role, ','))
+            {
+                if (role == "Operater")
+                {
+                    numOp++;
+                }
+            }
+        }
+
+        return numOp;
+    }
 
     // Metode za Usere
 
@@ -222,18 +246,18 @@ public:
     {
         if (organizationExists(organizationName))
         {
-            cout << "Organization already exists.\n";
+            cout << "Organizacija vec postoji.\n";
         }
 
         ofstream fileAppend(namefile, ios::app);
         if (!fileAppend.is_open())
         {
-            throw "Error: Could not open file for appending.\n";
+            throw "Greska: nemoguce otvaranje datoteke za izmjene.\n";
         }
 
         fileAppend << organizationName << "," << key << "\n"; // Dodaj organizaciju
         fileAppend.close();
-        cout << "Organization added successfully.\n";
+        cout << "Organizacija uspjesno dodata.\n";
     }
 
     void allTickets()
@@ -339,7 +363,7 @@ public:
     // Metode za Key.csv
     bool validateKey(const string &key)
     {
-        ifstream inputFile(namefile); // Otvori fajl sa ključevima
+        ifstream inputFile("Keys.csv", ios::in); // Otvori fajl sa ključevima
 
         // Otvaranje fajla za čitanje
         if (!inputFile)
@@ -351,10 +375,10 @@ public:
         while (getline(inputFile, line))
         {
             stringstream ss(line);
-            string organization, storedKey;
+            string status, storedKey;
 
             // Parsiraj organizaciju i ključ
-            if (getline(ss, organization, ',') && getline(ss, storedKey, ','))
+            if (getline(ss, storedKey, ',') && getline(ss, status, ','))
             {
                 if (storedKey == key)
                 {
@@ -370,7 +394,7 @@ public:
 
     string getFirstFreeKey()
     {
-        ifstream file(namefile);
+        ifstream file("Keys.csv", ios::in);
         if (!file.is_open())
         {
             cerr << "File failed opening." << endl;
@@ -407,7 +431,7 @@ public:
         }
 
         // Ažuriranje fajla
-        ofstream outFile(namefile, ios::trunc);
+        ofstream outFile("Keys.csv", ios::trunc);
         if (!outFile.is_open())
         {
             cerr << "Error: Cannot write to the file!" << endl;
@@ -468,7 +492,7 @@ public:
         if (!found)
         {
             // Ako organizacija nije pronađena, dodaj novu
-            tempFile << organizationName << "," << key << "\n";
+            tempFile << key << "," << organizationName << "\n";
         }
 
         inputFile.close();

@@ -2,7 +2,7 @@
 #include <string>
 #include "file.h"
 #include "Organizacija.h"
-
+#include "User.h"
 
 void menuForAdmin(file User, Organizacija org, std::string currentUser)
 {
@@ -12,7 +12,7 @@ void menuForAdmin(file User, Organizacija org, std::string currentUser)
         std::cout << "\n===== MENI ZA ADMINE =====" << std::endl;
         std::cout << "1. Prikazi sve tikete" << std::endl;                         // Marija
         std::cout << "2. Upravljanje nalozima korisnika i operatera" << std::endl; // Marija
-        std::cout << "3. Pregled statistike (dnevna i mjesečna)" << std::endl;     // Milan
+        std::cout << "3. Pregled statistike" << std::endl;                         // Milan
         std::cout << "4. Provjera verzije sistema" << std::endl;                   // Sanja
         std::cout << "5. Odjava" << std::endl;
         std::cout << "Unesite svoj izbor: ";
@@ -54,13 +54,13 @@ void menuForAdmin(file User, Organizacija org, std::string currentUser)
                     }
                     else if (count == 2)
                     {
-                        if (User.getNumAdmin() <= 2)// treba izmijeniti na numoperatora
-                        { 
+                        if (User.numOpsInOrg() <= 2) // treba izmijeniti na numoperatora
+                        {
                             dozvola = false;
                         }
                         else
                         {
-                            dozvola == true;
+                            dozvola = true;
                         }
                     }
                     else if (count == 3)
@@ -82,6 +82,12 @@ void menuForAdmin(file User, Organizacija org, std::string currentUser)
                         std::cin >> username;
                         std::cout << "Unesite lozinku: " << std::endl;
                         std::cin >> password;
+                        while (!passIsStrong(password))
+                        {
+                            cout << "Nedovoljno jaka lozinka, pokusajte ponovo: ";
+                            cin.ignore();
+                            std::cin >> password;
+                        }
                     } while (User.isExisting(username) && count != 1 && count != 2 && count != 3);
                     if (count == 1)
                     {
@@ -106,12 +112,52 @@ void menuForAdmin(file User, Organizacija org, std::string currentUser)
                 {
                     std::cout << "Unesite ime korisnika koji zelite brisati: " << std::endl;
                     std::cin >> delete_user;
-                }while(!User.deleteUser(delete_user));
+                } while (!User.deleteUser(delete_user));
             }
         }
         else if (choice == 3)
         {
-            //Milan
+            cin.ignore();
+
+            cout << "Unesite pocetni datum filtriranja (u formatu: YYYY-MM-DD) ili ostavite prazno: ";
+            string startDate;
+            getline(cin, startDate);
+
+            cout << "Unesite krajnji datum filtriranja (u formatu: YYYY-MM-DD) ili ostavite prazno: ";
+            string endDate;
+            getline(cin, endDate);
+
+            if (!validateDates(startDate, endDate))
+            {
+                cerr << "Nepravilan unos datuma." << endl;
+                // povratak u proslu funkciju
+            }
+            else
+            {
+                int status;
+
+                cout << "Odaberite koje tikete zelite vidjeti (trenutno otvorene, trenutno zatvorene ili sve): " << endl;
+                cout << "1. Otvoreni" << endl;
+                cout << "2. Zatvoreni" << endl;
+                cout << "3. Svi" << endl;
+                cout << "4. Povratak" << endl;
+
+                cin >> status;
+                if (status == 1 || status == 2 || status == 3)
+                {
+                    try
+                    {
+                        auto filteredTickets = filterTickets(startDate, endDate, status);
+
+                        cout << "Broj filtriranih tiketa: " << filteredTickets.size() << endl;
+                        generateStatistics(filteredTickets);
+                    }
+                    catch (const exception &e)
+                    {
+                        cerr << "Greska: " << e.what() << endl;
+                    }
+                }
+            }
         }
         else if (choice == 4)
         {
@@ -128,16 +174,16 @@ void menuForAdmin(file User, Organizacija org, std::string currentUser)
                 if (aktivacija == 'Y' || aktivacija == 'y')
                 {
                     std::string key;
-                    if (org.unosKljuča())  // Unos ključa za aktivaciju
+                    if (org.unosKljuča()) // Unos ključa za aktivaciju
                     {
                         std::string key = org.getKljuc();
-                        
-                        if (User.validateKey(key))  // Provjera validnosti ključa
+
+                        if (User.validateKey(key)) // Provjera validnosti ključa
                         {
                             std::cout << "Ključ je validan!" << std::endl;
 
                             // Dodaj ključ organizaciji
-                            std::string freeKey = User.getFirstFreeKey();  
+                            std::string freeKey = User.getFirstFreeKey();
                             if (!freeKey.empty())
                             {
                                 User.addKeyToOrganization("organization_name", freeKey);
@@ -164,6 +210,5 @@ void menuForAdmin(file User, Organizacija org, std::string currentUser)
                 }
             }
         }
-    } 
-    while (choice != 5);
+    } while (choice != 5);
 }

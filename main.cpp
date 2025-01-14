@@ -39,8 +39,6 @@ int main()
         currentUser.setRole("Admin");
 
         Organization.addOrganization(organizationName, "");
-
-        std::cout << "Uspjesno kreirana organizacija" << std::endl;
     }
     do
     {

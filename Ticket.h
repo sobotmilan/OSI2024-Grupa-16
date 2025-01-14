@@ -241,7 +241,9 @@ void generateStatistics(const vector<Ticket> &tickets)
 
     for (auto &iter : tickets)
     {
-        cout << "ID: " << iter.id << "\n Status: " << iter.status << "\n Zahtjev: " << iter.info << "\n Korisnik: " << iter.kor << "\n Operater: " << iter.ope << "\n Datum otvaranja: " << iter.datumO << "\n Datum zatvaranja: " << iter.datumZ << endl;
+        cout << "ID: " << iter.id << "\n Status: " << iter.status << "\n Zahtjev: " << iter.info << "\n Korisnik: " << iter.kor << "\n Operater: " << iter.ope << "\n Datum otvaranja: " << iter.datumO << "\n";
+        if (!iter.datumZ.empty())
+            cout << "Datum zatvaranja : " << iter.datumZ << endl;
     }
 }
 
