@@ -3,97 +3,95 @@
 #include <cstdlib>
 #include "file.h"
 #include "User.h"
+#include "menu_admin.h"
 
-
-int main() {
+int main()
+{
     User currentUser;
-    bool stopProgram=false;
+    Organizacija Organizacija;
+    bool stopProgram = false;
     file Organization("Organization.csv");
     file User("User.csv");
-    
-    if(Organization.isEmpty()){
-        std::cout<<"Kreiranje organizacije:"<<std::endl;
+
+    if (Organization.isEmpty())
+    {
+        std::cout << "Kreiranje organizacije:" << std::endl;
         std::string organizationName;
         std::cout << "Unesite naziv organizacije: ";
-        std::cin>>organizationName;
+        std::cin >> organizationName;
         // Organization.addOrganization(organizationName);
-        std::cout<<std::endl;
+        std::cout << std::endl;
 
-        std::cout << "Kreiranje administratorskog naloga: "<<std::endl;
+        std::cout << "Kreiranje administratorskog naloga: " << std::endl;
         std::string adminUsername, adminPassword;
         do
         {
-            std::cout << "Unesite korisnicko ime admina: "<<std::endl;
-            std::cin>>adminUsername;
-            std::cout << "Unesite lozinku za admina: "<<std::endl;
-            std::cin>>adminPassword;
-        }while(User.isExisting(adminUsername));
+            std::cout << "Unesite korisnicko ime admina: " << std::endl;
+            std::cin >> adminUsername;
+            std::cout << "Unesite lozinku za admina: " << std::endl;
+            std::cin >> adminPassword;
+        } while (User.isExisting(adminUsername));
 
-        User.addUser(adminUsername,adminPassword, "Admin");
+        User.addUser(adminUsername, adminPassword, "Admin");
         currentUser.setUsername(adminUsername);
         currentUser.setPassword(adminPassword);
         currentUser.setRole("Admin");
 
         std::cout << "Uspjesno kreirana organizacija" << std::endl;
     }
-    do{
-        if(currentUser.getUsername()==""){
-            std::cout << "Prijava na nalog: "<<std::endl;
+    do
+    {
+        if (currentUser.getUsername() == "")
+        {
+            std::cout << "Prijava na nalog: " << std::endl;
             std::string username, password;
-            do
+            std::cout << "Unesite korisnicko ime: " << std::endl;
+            std::cin >> username;
+            std::cout << "Unesite lozinku: " << std::endl;
+            std::cin >> password;
+            if (User.login(username, password))
             {
-                std::cout << "Unesite korisnicko ime: " << std::endl;
-                std::cin >> username;
-                std::cout << "Unesite lozinku: " << std::endl;
-                std::cin >> password;
-            }while(!User.login(username,password));
-            currentUser.setUsername(username);
-            currentUser.setPassword(password);
-            currentUser.setRole(User.findRole(username));
+                currentUser.setUsername(username);
+                currentUser.setPassword(password);
+                currentUser.setRole(User.findRole(username));
+            }else{
+                std::cout<<"Pogresna sifra/ime"<< std::endl;
+            }
         }
         int choice;
-        if(currentUser.getRole()=="User"){
+        if (currentUser.getRole() == "User")
+        {
             do
             {
                 std::cout << "\n===== MENI ZA KORISNIKE =====" << std::endl;
-                std::cout << "1. Kreiraj tiket" << std::endl;
-                std::cout << "2. Prikazi sve tikete" << std::endl;
-                std::cout << "3. Ažuriraj informacije na tiketu" << std::endl;
-                std::cout << "4. Odjava" << std::endl;
+                std::cout << "1. Kreiraj tiket" << std::endl;      // Ana, Milan
+                std::cout << "2. Prikazi sve tikete" << std::endl; // Ana, mogucnost dopune informacija gdje je dozvoljeno
+                std::cout << "3. Odjava" << std::endl;
                 std::cout << "Unesite svoj izbor: ";
                 std::cin >> choice;
 
-            } while (choice != 4);
+            } while (choice != 3);
         }
-        else if(currentUser.getRole()=="Operater"){
-            do{
+        else if (currentUser.getRole() == "Operater")
+        {
+            do
+            {
                 std::cout << "\n===== MENI ZA OPERATERE =====" << std::endl;
-                std::cout << "1. Kreiraj tiket" << std::endl;
-                std::cout << "2. Prikazi sve tikete" << std::endl;
-                std::cout << "3. Promjeni stanje tiketa" << std::endl;
-                std::cout << "4. Odjava" << std::endl;
+                std::cout << "1. Prikazi sve tikete" << std::endl; // Milan, mogucnost promjene stanja nakon pregleda tiketa
+                std::cout << "2. Odjava" << std::endl;
                 std::cout << "Unesite svoj izbor: ";
                 std::cin >> choice;
 
             } while (choice != 4);
         }
-        else if(currentUser.getRole()=="Admin"){
-            do{
-                std::cout << "\n===== MENI ZA ADMINE =====" << std::endl;
-                std::cout << "1. Kreiraj tiket" << std::endl;
-                std::cout << "2. Prikazi sve tikete" << std::endl;
-                std::cout << "3. Upravljanje nalozima korisnika i operatera" << std::endl;
-                std::cout << "4. Pregled statistike (dnevna i mjesečna)" << std::endl;
-                std::cout << "5. Odjava" << std::endl;
-                std::cout << "Unesite svoj izbor: ";
-                std::cin >> choice;
-            } while (choice != 5);
+        else if (currentUser.getRole() == "Admin")
+        {
+            menuForAdmin(User, Organizacija, currentUser.getUsername());
         }
         currentUser.setUsername("");
         currentUser.setPassword("");
         currentUser.setRole("");
-    }while(!stopProgram);
+    } while (!stopProgram);
 
-    
     return 0;
 }

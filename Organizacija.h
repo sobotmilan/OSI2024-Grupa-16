@@ -29,8 +29,6 @@ public:
         return true;
     }
 
-    std::string getKljuc() const { return kljuc; }
-    std::string getNazivOrganizacije() const { return nazivOrganizacije; }
 
     // Provjerava verziju organizacije
     std::string provjeriVerziju()

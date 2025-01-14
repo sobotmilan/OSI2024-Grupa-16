@@ -51,6 +51,8 @@ public:
             std::cout << "File failed opening" << std::endl;
             return false;
         }
+        file.clear(); // Resetuje error state ako je došlo do EOF
+        file.seekg(0, std::ios::beg);
         std::string line;
         while (std::getline(file, line))
         {
@@ -451,7 +453,8 @@ public:
         return numAd;
     }
 
-    bool isExisting(std::string username){
+    bool isExisting(std::string username)
+    {
         return userExist(username);
     }
 
