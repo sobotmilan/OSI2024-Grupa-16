@@ -64,38 +64,6 @@ public:
         return status;
     }
 
-    void upisiOrganizacijuUFajl(const string &filename = "Organizacije.csv")
-    {
-        string ime, adresa, brojTelefona, email;
-
-        // Unos podataka o organizaciji
-        cout << "Unesite ime organizacije: ";
-        getline(cin, ime);
-
-        cout << "Unesite adresu organizacije: ";
-        getline(cin, adresa);
-
-        cout << "Unesite broj telefona organizacije: ";
-        getline(cin, brojTelefona);
-
-        cout << "Unesite email organizacije: ";
-        getline(cin, email);
-
-        // Otvaranje fajla za upisivanje (append mode)
-        ofstream file(filename, ios::app);
-        if (!file.is_open())
-        {
-            throw runtime_error("Greska prilikom otvaranja fajla " + filename);
-        }
-
-        // Upisivanje podataka u fajl
-        file << ime << "," << adresa << "," << brojTelefona << "," << email << "\n";
-
-        cout << "Organizacija uspjesno upisana u fajl!" << endl;
-
-        file.close();
-    }
-
     int numOpsInOrg() const
     {
         ifstream userBase("User.csv", ios::in);

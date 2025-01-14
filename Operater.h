@@ -209,8 +209,9 @@ Operater findSuitableOperater()
     {
         istringstream ss(currLine);
         string id, status, info, ope, kor, datumo, datumz; // id,status,zahtjevi,operater,korisnik,datum otvaranja,datum zatvaranja
-        if (getline(ss, id, ',') && getline(ss, status, ',') && getline(ss, info, ',') && getline(ss, ope, ',') && getline(ss, kor, ',') && getline(ss, datumo, ',') && getline(ss, datumz, ','))
+        if (getline(ss, id, ',') && getline(ss, status, ',') && getline(ss, info, ',') && getline(ss, ope, ',') && getline(ss, kor, ',') && getline(ss, datumo, ','))
         {
+            getline(ss, datumz, ',');
             if (operaterTicketCount.find(ope) != operaterTicketCount.end())
             {
                 operaterTicketCount[ope]++;
@@ -266,4 +267,3 @@ void writeOpsToCSV(const std::vector<Operater> &operators)
     userBase.close();
     std::cout << "Svi operateri su uspjesno upisani u bazu.\n";
 }
-

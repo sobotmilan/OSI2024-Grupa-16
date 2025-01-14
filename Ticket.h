@@ -132,7 +132,6 @@ chrono::system_clock::time_point convertToDate(const string &str)
         throw runtime_error("Neuspjesno pretvaranje u datum.");
     }
     return chrono::system_clock::from_time_t(mktime(&res));
-    chrono::system_clock::time_point now;
 }
 
 bool isDateInRange(const string &filterDate, const string &startDate, const string &endDate)
