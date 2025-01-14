@@ -370,7 +370,7 @@ public:
         // Otvaranje fajla za čitanje
         if (!inputFile)
         {
-            cerr << "Error: Could not open file for reading.\n";
+            cerr << "Greška. Nije moguće otvoriti datoteku za čitanje.\n";
             return false;
         }
         string line;
@@ -380,7 +380,7 @@ public:
             string status, storedKey;
 
             // Parsiraj organizaciju i ključ
-            if (getline(ss, storedKey, ',') && getline(ss, status, ','))
+            if (getline(ss, storedKey, ',') && getline(ss, status))
             {
                 if (storedKey == key)
                 {
@@ -394,121 +394,64 @@ public:
         return false; // Ključ nije validan
     }
 
-    string getFirstFreeKey()
+    bool addKeyToOrganization(const string &key)
     {
-        ifstream file("Keys.csv", ios::in);
-        if (!file.is_open())
-        {
-            cerr << "File failed opening." << endl;
-            return "";
-        }
-
-        vector<pair<string, string>> keys;
-        string line, key, status;
-        bool found = false;
-        string firstFreeKey = "";
-
-        // Čitanje fajla
-        while (getline(file, line))
-        {
-            istringstream iss(line);
-            if (getline(iss, key, ',') && getline(iss, status, ','))
-            {
-                if (!found && status == "slobodan")
-                {
-                    firstFreeKey = key;
-                    status = "aktivan";
-                    found = true;
-                }
-                keys.emplace_back(key, status);
-            }
-        }
-        file.close();
-
-        // Ako nije pronađen slobodan ključ
-        if (firstFreeKey.empty())
-        {
-            cerr << "No free keys available." << endl;
-            return "";
-        }
-
-        // Ažuriranje fajla
-        ofstream outFile("Keys.csv", ios::trunc);
-        if (!outFile.is_open())
-        {
-            cerr << "Error: Cannot write to the file!" << endl;
-            return "";
-        }
-
-        for (const auto &pair : keys)
-        {
-            outFile << pair.first << "," << pair.second << "\n";
-        }
-        outFile.close();
-
-        return firstFreeKey;
-    }
-
-    bool addKeyToOrganization(const string &organizationName, const string &key)
-    {
-        ifstream inputFile(namefile);
+        ifstream inputFile("Keys.csv", ios::in);
         if (!inputFile)
         {
-            cerr << "Error: Could not open file for reading.\n";
+            cerr << "Greška: Nije moguće otvoriti datoteku za čitanje.\n";
             return false;
         }
-        ofstream tempFile("temp.csv"); // Privremeni fajl za upis
+
+        ofstream tempFile("temp.csv", ios::out); // Privremeni fajl za upis
         if (!tempFile)
         {
-            cerr << "Error: Could not create temporary file.\n";
+            cerr << "Greška. Nije moguće kreirati privremenu datoteku.\n";
             inputFile.close();
             return false;
         }
 
-        bool found = false; // Da li je organizacija pronađena
         string line;
+        bool keyFound = false;
         while (getline(inputFile, line))
         {
             stringstream ss(line);
-            string currentOrganization, currentKey;
-
-            // Parsiraj liniju u organizaciju i ključ
-            if (getline(ss, currentOrganization, ',') && getline(ss, currentKey, ','))
+            string currentKey, currentStatus;
+            if (getline(ss, currentKey, ',') && getline(ss, currentStatus))
             {
-                if (currentOrganization == organizationName)
+                if (currentKey == key)
                 {
-                    found = true;
-                    tempFile << currentOrganization << "," << key << "\n"; // Ažuriraj ključ
+                    // Ako je ključ pronađen i status je "slobodan"
+                    if (currentStatus == "slobodan")
+                    {
+                        currentStatus = "aktivan"; // Mijenjamo status ključa u 'aktivan'
+                        keyFound = true;
+                    }
                 }
-                else
-                {
-                    tempFile << line << "\n"; // Zadrži postojeću liniju
-                }
+                tempFile << currentKey << "," << currentStatus << "\n"; // Zapisujemo ključ bez obzira na status
             }
-            else
-            {
-                tempFile << line << "\n"; // Zadrži nevažeće linije
-            }
-        }
-
-        if (!found)
-        {
-            // Ako organizacija nije pronađena, dodaj novu
-            tempFile << key << "," << organizationName << "\n";
         }
 
         inputFile.close();
         tempFile.close();
 
-        // Zamijeni originalni fajl privremenim fajlom
-        if (remove(namefile.c_str()) != 0 || rename("temp.csv", namefile.c_str()) != 0)
+        // Ako ključ nije pronađen ili nije slobodan, vraćamo grešku
+        if (!keyFound)
         {
-            cerr << "Error: Could not replace the original file.\n";
+            cerr << "Ključ nije pronađen ili nije slobodan.\n";
+            return false;
+        }
+
+        // Zamjena originalnog fajla sa ažuriranim
+        if (remove("Keys.csv") != 0 || rename("temp.csv", "Keys.csv") != 0)
+        {
+            cerr << "Greška. Nije moguće zamijeniti privremenu datoteku.\n";
             return false;
         }
 
         return true;
     }
+
     // Ostale metode...
     int getNumAdmin() const
     {

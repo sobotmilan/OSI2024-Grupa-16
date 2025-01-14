@@ -5,6 +5,8 @@
 #include <iomanip>
 #include <iostream>
 #include <unordered_map>
+#include "file.h"
+
 using namespace std;
 
 class Organizacija
@@ -21,7 +23,7 @@ public:
     string getNazivOrganizacije() const { return nazivOrganizacije; }
 
     // Metoda za unos ključa
-    bool unosKljuča()
+    bool enterKey()
     {
         string unos;
         cout << "Unesite ključ za aktivaciju komercijalne verzije: ";
