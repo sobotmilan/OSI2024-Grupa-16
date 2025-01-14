@@ -4,9 +4,12 @@
 #include "file.h"
 #include "User.h"
 #include "menuOperater.h"
+#include "menu_admin.h"
+
 int main()
 {
     User currentUser;
+    Organizacija Organizacija;
     bool stopProgram = false;
     file Organization("Organization.csv");
     file User("User.csv");
@@ -45,16 +48,20 @@ int main()
         {
             std::cout << "Prijava na nalog: " << std::endl;
             std::string username, password;
-            do
+            std::cout << "Unesite korisnicko ime: " << std::endl;
+            std::cin >> username;
+            std::cout << "Unesite lozinku: " << std::endl;
+            std::cin >> password;
+            if (User.login(username, password))
             {
-                std::cout << "Unesite korisnicko ime: " << std::endl;
-                std::cin >> username;
-                std::cout << "Unesite lozinku: " << std::endl;
-                std::cin >> password;
-            } while (!User.login(username, password));
-            currentUser.setUsername(username);
-            currentUser.setPassword(password);
-            currentUser.setRole(User.findRole(username));
+                currentUser.setUsername(username);
+                currentUser.setPassword(password);
+                currentUser.setRole(User.findRole(username));
+            }
+            else
+            {
+                std::cout << "Pogresna sifra/ime" << std::endl;
+            }
         }
         int choice;
         if (currentUser.getRole() == "User")
@@ -62,14 +69,13 @@ int main()
             do
             {
                 std::cout << "\n===== MENI ZA KORISNIKE =====" << std::endl;
-                std::cout << "1. Kreiraj tiket" << std::endl;
-                std::cout << "2. Prikazi sve tikete" << std::endl;
-                std::cout << "3. Ažuriraj informacije na tiketu" << std::endl;
-                std::cout << "4. Odjava" << std::endl;
+                std::cout << "1. Kreiraj tiket" << std::endl;      // Ana, Milan
+                std::cout << "2. Prikazi sve tikete" << std::endl; // Ana, mogucnost dopune informacija gdje je dozvoljeno
+                std::cout << "3. Odjava" << std::endl;
                 std::cout << "Unesite svoj izbor: ";
                 std::cin >> choice;
 
-            } while (choice != 4);
+            } while (choice != 3);
         }
         else if (currentUser.getRole() == "Operater")
         {
@@ -77,17 +83,7 @@ int main()
         }
         else if (currentUser.getRole() == "Admin")
         {
-            do
-            {
-                std::cout << "\n===== MENI ZA ADMINE =====" << std::endl;
-                std::cout << "1. Kreiraj tiket" << std::endl;
-                std::cout << "2. Prikazi sve tikete" << std::endl;
-                std::cout << "3. Upravljanje nalozima korisnika i operatera" << std::endl;
-                std::cout << "4. Pregled statistike (dnevna i mjesečna)" << std::endl;
-                std::cout << "5. Odjava" << std::endl;
-                std::cout << "Unesite svoj izbor: ";
-                std::cin >> choice;
-            } while (choice != 5);
+            menuForAdmin(User, Organizacija, currentUser.getUsername());
         }
         currentUser.setUsername("");
         currentUser.setPasswordNoCheck("");

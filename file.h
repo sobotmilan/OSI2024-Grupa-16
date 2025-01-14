@@ -23,8 +23,8 @@ public:
     file(const string &namefile) : namefile(namefile) {}
     void setNamefile(const string &namefile) { this->namefile = namefile; }
     string getNamefile() const { return namefile; }
-    int numOpsInOrg() const;  
-    
+    int numOpsInOrg() const;
+
     // Metode za Usere
 
     bool isEmpty()
@@ -58,8 +58,10 @@ public:
             cout << "File failed opening" << endl;
             return false;
         }
-        string line;
-        while (getline(file, line))
+        file.clear(); // Resetuje error state ako je došlo do EOF
+        file.seekg(0, std::ios::beg);
+        std::string line;
+        while (std::getline(file, line))
         {
             stringstream ss(line);
             string user, pass, role;
@@ -216,7 +218,7 @@ public:
     }
 
     // Metoda koja dodaje organizaciju u fajl, ako već ne postoji
-    void addOrganization(const string &organizationName, const string &key) 
+    void addOrganization(const string &organizationName, const string &key)
     {
         if (organizationExists(organizationName))
         {
@@ -224,9 +226,9 @@ public:
         }
 
         ofstream fileAppend(namefile, ios::app);
-        if (!fileAppend.is_open()) 
+        if (!fileAppend.is_open())
         {
-            throw "Error: Could not open file for appending.\n";                                       
+            throw "Error: Could not open file for appending.\n";
         }
 
         fileAppend << organizationName << "," << key << "\n"; // Dodaj organizaciju
@@ -507,20 +509,22 @@ public:
         return numAd;
     }
 
-    bool canAddUser(const User& user) {
-    if (getNumAdmin() >= 1) {  // Koristi getNumAdmin()
-        std::cerr << "Limit za administratore je dostignut!\n";
-        return false;
+    bool canAddUser(const User &user)
+    {
+        if (getNumAdmin() >= 1)
+        { // Koristi getNumAdmin()
+            std::cerr << "Limit za administratore je dostignut!\n";
+            return false;
+        }
+        if (numOpsInOrg() >= 2)
+        { // Koristi numOpsInOrg()
+            std::cerr << "Limit za operatere je dostignut!\n";
+            return false;
+        }
+        users.push_back(user);
+        return true;
     }
-    if (numOpsInOrg() >= 2) {  // Koristi numOpsInOrg()
-        std::cerr << "Limit za operatere je dostignut!\n";
-        return false;
-    }
-    users.push_back(user);
-    return true;
-}
-
-    bool isExisting(string username)
+    bool isExisting(std::string username)
     {
         return userExist(username);
     }
@@ -952,8 +956,7 @@ public:
         return result;
     }
 
-    Ticket
-    lookupTicket(int ID, string username)
+    Ticket lookupTicket(int ID, string username)
     {
         ifstream ticketBase("Ticket.csv", ios::in);
         if (!ticketBase.is_open())
