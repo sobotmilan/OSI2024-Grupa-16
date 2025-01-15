@@ -258,7 +258,7 @@ public:
 
         fileAppend << organizationName << "," << key << "\n"; // Dodaj organizaciju
         fileAppend.close();
-        cout << "Organizacija uspjesno dodata.\n";
+        cout << "Organizacija uspjesno dodana.\n";
     }
 
     void allTickets()
