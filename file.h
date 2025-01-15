@@ -436,7 +436,7 @@ public:
         while (getline(file, line))
         {
             istringstream iss(line);
-            if (getline(iss, key, ',') && getline(iss, status, ','))
+            if (getline(iss, key, ',') && getline(iss, status))
             {
                 if (status == "slobodan" && firstFreeKey.empty())
                 {
@@ -512,6 +512,7 @@ public:
         if (orgFile.is_open())
         {
             orgFile << orgName << "," << key << "\n";
+            orgFile.flush(); 
         }
 
         return true;
