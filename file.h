@@ -395,7 +395,42 @@ public:
         return false; // Ključ nije validan
     }
 
-    bool addKeyToOrganization(const string &key)
+    string getFirstFreeKey()
+    {
+        ifstream file("Keys.csv", ios::in);
+        if (!file.is_open())
+        {
+            cerr << "Greška. Nije moguće otvoriti datoteku za čitanje.\n";
+            return "";
+        }
+
+        string line, key, status;
+        string firstFreeKey = "";
+
+        // Čitanje fajla
+        while (getline(file, line))
+        {
+            istringstream iss(line);
+            if (getline(iss, key, ',') && getline(iss, status, ','))
+            {
+                if (status == "slobodan" && firstFreeKey.empty())
+                {
+                    firstFreeKey = key;
+                }
+            }
+        }
+        file.close();
+
+        if (firstFreeKey.empty())
+        {
+            cerr << "Nema slobodnih ključeva.\n";
+            return "";
+        }
+
+        return firstFreeKey;
+    }
+
+    bool addKeyToOrganization(const string &key, const string &orgName)
     {
         ifstream inputFile("Keys.csv", ios::in);
         if (!inputFile)
@@ -420,14 +455,10 @@ public:
             string currentKey, currentStatus;
             if (getline(ss, currentKey, ',') && getline(ss, currentStatus))
             {
-                if (currentKey == key)
+                if (currentKey == key && currentStatus == "slobodan")
                 {
-                    // Ako je ključ pronađen i status je "slobodan"
-                    if (currentStatus == "slobodan")
-                    {
-                        currentStatus = "aktivan"; // Mijenjamo status ključa u 'aktivan'
-                        keyFound = true;
-                    }
+                    currentStatus = "aktivan"; // Mijenjamo status ključa u 'aktivan'
+                    keyFound = true;
                 }
                 tempFile << currentKey << "," << currentStatus << "\n"; // Zapisujemo ključ bez obzira na status
             }
@@ -448,6 +479,13 @@ public:
         {
             cerr << "Greška. Nije moguće zamijeniti privremenu datoteku.\n";
             return false;
+        }
+
+        // Dodavanje ključa organizaciji u Organizacija.csv
+        ofstream orgFile("Organizacija.csv", ios::app); // Ažuriranje fajla sa novom organizacijom
+        if (orgFile.is_open())
+        {
+            orgFile << orgName << "," << key << "\n";
         }
 
         return true;
@@ -594,48 +632,47 @@ public:
     }
 
     Ticket unosInformacijaOTiketu(const User &user)
-{
-    int id = generateID();
-
-    if (id == -1)
     {
-        throw runtime_error("Neuspješno generisanje ID-a tiketa nakon više pokušaja.");
-    }
+        int id = generateID();
 
-    string status = "Otvoren";
-    string operater = "";
-    string informacije, korisnik;
-    string datumZatvaranja = "";
-
-    korisnik = user.getUsername();
-
-    auto now = chrono::system_clock::now();
-    auto time_t_now = chrono::system_clock::to_time_t(now);
-    char buffer[20];
-    strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", localtime(&time_t_now));
-    string datumOtvaranja = buffer;
-
-    cout << "ID tiketa: " << id << endl;
-    std::cin.ignore();
-    do
-    {
-        std::cout << "Unesite zahtjeve tiketa: ";
-        std::getline(std::cin, informacije);
-        if (informacije.empty())
+        if (id == -1)
         {
-            std::cout << "Ne možete otvoriti tiket bez zahtjeva. Pokušajte ponovo." << std::endl;
+            throw runtime_error("Neuspješno generisanje ID-a tiketa nakon više pokušaja.");
         }
-    } while (informacije.empty());
 
-    Ticket ticket(id, operater, korisnik, status, informacije, datumOtvaranja, datumZatvaranja);
-    ticket.setOperater(findSuitableOperater().getUsername());
-    ticket.setStatus("Dodijeljen operateru");
-    saveTicketToFile(ticket);
-    cout << "Tiket uspjesno kreiran." << endl;
+        string status = "Otvoren";
+        string operater = "";
+        string informacije, korisnik;
+        string datumZatvaranja = "";
 
-    return ticket;
-}
+        korisnik = user.getUsername();
 
+        auto now = chrono::system_clock::now();
+        auto time_t_now = chrono::system_clock::to_time_t(now);
+        char buffer[20];
+        strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", localtime(&time_t_now));
+        string datumOtvaranja = buffer;
+
+        cout << "ID tiketa: " << id << endl;
+        std::cin.ignore();
+        do
+        {
+            std::cout << "Unesite zahtjeve tiketa: ";
+            std::getline(std::cin, informacije);
+            if (informacije.empty())
+            {
+                std::cout << "Ne možete otvoriti tiket bez zahtjeva. Pokušajte ponovo." << std::endl;
+            }
+        } while (informacije.empty());
+
+        Ticket ticket(id, operater, korisnik, status, informacije, datumOtvaranja, datumZatvaranja);
+        ticket.setOperater(findSuitableOperater().getUsername());
+        ticket.setStatus("Dodijeljen operateru");
+        saveTicketToFile(ticket);
+        cout << "Tiket uspjesno kreiran." << endl;
+
+        return ticket;
+    }
 
     void updateTicketClosureDateInFile(const Ticket &ticket)
     {
@@ -715,99 +752,99 @@ public:
 
     // 1.3 Prikaz tiketa korisnika
     void showUserTickets(const User &user)
+    {
+        std::ifstream inputFile("Ticket.csv");
+        std::string line;
+        std::vector<Ticket> tickets;
+        bool found = false;
+        if (!inputFile.is_open())
         {
-            std::ifstream inputFile("Ticket.csv");
-            std::string line;
-            std::vector<Ticket> tickets;
-            bool found = false;
-            if (!inputFile.is_open())
+            std::cout << "Freska prilikom otvaranja fajla." << std::endl;
+            return;
+        }
+        std::cout << std::endl;
+        while (getline(inputFile, line))
+        {
+            std::stringstream ss(line);
+            std::string id, status, info, ope, kor, datumo, datumz; // id,status,zahtjevi,operater,korisnik,datum otvaranja,datum zatvaranja
+            if (getline(ss, id, ',') && getline(ss, status, ',') && getline(ss, info, ',') && getline(ss, ope, ',') && getline(ss, kor, ',') && getline(ss, datumo, ','))
             {
-                std::cout << "Freska prilikom otvaranja fajla." << std::endl;
-                return;
-            }
-            std::cout << std::endl;
-            while (getline(inputFile, line))
-            {
-                std::stringstream ss(line);
-                std::string id, status, info, ope, kor, datumo, datumz; // id,status,zahtjevi,operater,korisnik,datum otvaranja,datum zatvaranja
-                if (getline(ss, id, ',') && getline(ss, status, ',') && getline(ss, info, ',') && getline(ss, ope, ',') && getline(ss, kor, ',') && getline(ss, datumo, ','))
+                getline(ss, datumz, ',');
+                if (kor == user.getUsername())
                 {
-                    getline(ss, datumz, ',');
-                    if (kor == user.getUsername())
+                    std::cout << "ID: " << id << std::endl
+                              << "Status: " << status << std::endl
+                              << "Zahtjev: " << info << std::endl
+                              << "Operater: " << ope << std::endl
+                              << "Korisnik: " << kor << std::endl
+                              << "Datum otvaranja: " << datumo << std::endl;
+                    if (!datumz.empty())
+                        std::cout << "Datum zatvaranja: " << datumz << std::endl;
+                    found = true;
+                    std::cout << std::endl;
+                    if (status == "vracen korisniku")
                     {
-                        std::cout << "ID: " << id << std::endl
-                                  << "Status: " << status << std::endl
-                                  << "Zahtjev: " << info << std::endl
-                                  << "Operater: " << ope << std::endl
-                                  << "Korisnik: " << kor << std::endl
-                                  << "Datum otvaranja: " << datumo << std::endl;
-                        if (!datumz.empty())
-                            std::cout << "Datum zatvaranja: " << datumz << std::endl;
-                        found = true;
-                        std::cout << std::endl;
-                        if (status == "vracen korisniku")
-                        {
-                            Ticket ticket(std::stoi(id), ope, kor, status, info, datumo, datumz);
-                            tickets.push_back(ticket);
-                        }
-                    }
-                }
-            }
-
-            inputFile.close();
-
-            if (!found)
-            {
-                std::cout << "Nemate dodijeljenih tiketa." << std::endl;
-                return;
-            }
-
-            if (!tickets.empty())
-            {
-                std::cout << "Zelite li dopuniti informacije za tikete sa statusom 'vracen korisniku'? (da/ne): ";
-                std::string odgovor;
-                std::cin >> odgovor;
-                std::cin.ignore();
-
-                if (odgovor == "da")
-                {
-                    std::cout << "Tiketi sa statusom 'Vracen korisniku':" << std::endl;
-
-                    for (const auto &ticket : tickets)
-                    {
-                        std::cout << "ID: " << ticket.getID() << std::endl
-                                  << "Status: " << ticket.getStatus() << std::endl
-                                  << "Zahtjev: " << ticket.getInfo() << std::endl
-                                  << "Operater: " << ticket.getOperater() << std::endl
-                                  << "Korisnik: " << ticket.getKorisnik() << std::endl
-                                  << "Datum otvaranja: " << ticket.getDatumO() << std::endl;
-                        if (!ticket.getDatumZ().empty())
-                            std::cout << "Datum zatvaranja: " << ticket.getDatumZ() << std::endl;
-                        std::cout << std::endl;
-                    }
-
-                    std::cout << "Unesite ID tiketa za dopunu: ";
-                    int ticketID;
-                    std::cin >> ticketID;
-                    std::cin.ignore();
-
-                    auto it = std::find_if(tickets.begin(), tickets.end(), [ticketID](const Ticket &ticket)
-                                           { return ticket.getID() == ticketID; });
-
-                    if (it != tickets.end())
-                    {
-                        Ticket &selectedTicket = *it;
-                        addNewInfoToTicket(selectedTicket);     // Dodavanje novih informacija
-                        addTicketNewInfoToFile(selectedTicket); // Ažuriranje u fajlu
-                        std::cout << "Tiket je uspješno ažuriran." << std::endl;
-                    }
-                    else
-                    {
-                        std::cout << "Tiket sa unesenim ID-om ne postoji u listi." << std::endl;
+                        Ticket ticket(std::stoi(id), ope, kor, status, info, datumo, datumz);
+                        tickets.push_back(ticket);
                     }
                 }
             }
         }
+
+        inputFile.close();
+
+        if (!found)
+        {
+            std::cout << "Nemate dodijeljenih tiketa." << std::endl;
+            return;
+        }
+
+        if (!tickets.empty())
+        {
+            std::cout << "Zelite li dopuniti informacije za tikete sa statusom 'vracen korisniku'? (da/ne): ";
+            std::string odgovor;
+            std::cin >> odgovor;
+            std::cin.ignore();
+
+            if (odgovor == "da")
+            {
+                std::cout << "Tiketi sa statusom 'Vracen korisniku':" << std::endl;
+
+                for (const auto &ticket : tickets)
+                {
+                    std::cout << "ID: " << ticket.getID() << std::endl
+                              << "Status: " << ticket.getStatus() << std::endl
+                              << "Zahtjev: " << ticket.getInfo() << std::endl
+                              << "Operater: " << ticket.getOperater() << std::endl
+                              << "Korisnik: " << ticket.getKorisnik() << std::endl
+                              << "Datum otvaranja: " << ticket.getDatumO() << std::endl;
+                    if (!ticket.getDatumZ().empty())
+                        std::cout << "Datum zatvaranja: " << ticket.getDatumZ() << std::endl;
+                    std::cout << std::endl;
+                }
+
+                std::cout << "Unesite ID tiketa za dopunu: ";
+                int ticketID;
+                std::cin >> ticketID;
+                std::cin.ignore();
+
+                auto it = std::find_if(tickets.begin(), tickets.end(), [ticketID](const Ticket &ticket)
+                                       { return ticket.getID() == ticketID; });
+
+                if (it != tickets.end())
+                {
+                    Ticket &selectedTicket = *it;
+                    addNewInfoToTicket(selectedTicket);     // Dodavanje novih informacija
+                    addTicketNewInfoToFile(selectedTicket); // Ažuriranje u fajlu
+                    std::cout << "Tiket je uspješno ažuriran." << std::endl;
+                }
+                else
+                {
+                    std::cout << "Tiket sa unesenim ID-om ne postoji u listi." << std::endl;
+                }
+            }
+        }
+    }
 
 private:
     void saveTicketToFile(const Ticket &ticket)
@@ -856,7 +893,7 @@ private:
 
     // 1.4 dopuna informacija tiketa
 
-     void addNewInfoToTicket(Ticket &ticket)
+    void addNewInfoToTicket(Ticket &ticket)
     {
         std::cout << "Trenutne informacije: " << ticket.getInfo() << std::endl;
         std::cout << "Dodajte nove informacije: ";
@@ -864,7 +901,6 @@ private:
         std::string newInfo;
         std::getline(std::cin, newInfo);
         ticket.setInfo(ticket.getInfo() + " " + newInfo);
-
     }
 
     void addTicketNewInfoToFile(const Ticket &ticket)

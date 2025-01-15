@@ -9,15 +9,15 @@ bool hasNoSpaces(const std::string &input)
 {
     for (char c : input)
     {
-        if (std::isspace(c)) 
+        if (std::isspace(c))
         {
-            return false; 
+            return false;
         }
     }
-    return true; 
+    return true;
 }
 
-void menuForAdmin(file User, Organizacija org, std::string currentUser)
+void menuForAdmin(file User, file Keys, file Organization, Organizacija org, std::string currentUser)
 {
     int choice;
     do
@@ -188,23 +188,25 @@ void menuForAdmin(file User, Organizacija org, std::string currentUser)
 
                 if (aktivacija == 'Y' || aktivacija == 'y')
                 {
-                    if (org.enterKey()) // Unos ključa preko enterKey() funkcije
+                    // Automatski preuzimanje i aktiviranje ključa
+                    std::string freeKey = Keys.getFirstFreeKey(); // Preuzimanje prvog slobodnog ključa
+                    if (!freeKey.empty())                         // Ako je slobodan ključ pronađen
                     {
-                        std::string unosKljuča = org.getKljuc(); // Preuzimamo uneseni ključ
-
-                        // Validacija ključa
-                        if (User.validateKey(unosKljuča)) // Provjera validnosti ključa
+                        // Dodavanje ključa organizaciji
+                        if (Organization.addKeyToOrganization(freeKey, org.getNazivOrganizacije())) // Metoda za dodavanje ključa organizaciji
                         {
-                            // Aktiviranje ključa pozivom metode addKeyToOrg() iz Organizacija.h
-                            if (org.addKeyToOrg(unosKljuča)) 
-                            {
-                                std::cout << "Komercijalna verzija uspješno aktivirana!\n";
-                            }
+                            org.setKljuc(freeKey); // Dodijeli ključ organizaciji
+                            std::cout << "Ključ je uspješno dodijeljen organizaciji: " << org.getNazivOrganizacije() << std::endl;
+                            std::cout << "Komercijalna verzija uspješno aktivirana!\n";
                         }
                         else
                         {
-                            std::cerr << "Nevažeći ključ. Molimo pokušajte ponovo.\n";
+                            std::cerr << "Greška pri dodavanju ključa organizaciji.\n"; // Greška u metodi addKeyToOrganization
                         }
+                    }
+                    else
+                    {
+                        std::cerr << "Nema dostupnih slobodnih ključeva za aktivaciju.\n";
                     }
                 }
                 else if (aktivacija == 'N' || aktivacija == 'n')
@@ -221,5 +223,6 @@ void menuForAdmin(file User, Organizacija org, std::string currentUser)
                 std::cout << "Već imate komercijalnu verziju sistema.\n";
             }
         }
+
     } while (choice != 5);
 }
