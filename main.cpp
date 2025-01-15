@@ -14,6 +14,7 @@ int main()
     bool stopProgram = false;
     file Organization("Organization.csv");
     file User("User.csv");
+    file Keys("Keys.csv");
 
     if (Organization.isEmpty())
     {
@@ -82,7 +83,7 @@ int main()
         }
         else if (currentUser.getRole() == "Admin")
         {
-            menuForAdmin(User, Organizacija, currentUser.getUsername());
+            menuForAdmin(User, Keys, Organization, Organizacija, currentUser.getUsername());
         }
         currentUser.setUsername("");
         currentUser.setPasswordNoCheck("");
