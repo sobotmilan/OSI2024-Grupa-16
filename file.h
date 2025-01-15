@@ -627,7 +627,7 @@ public:
         }
     } while (informacije.empty());
 
-    Ticket ticket(id, status, informacije, operater, korisnik, datumOtvaranja, datumZatvaranja);
+    Ticket ticket(id, operater, korisnik, status, informacije, datumOtvaranja, datumZatvaranja);
     ticket.setOperater(findSuitableOperater().getUsername());
     ticket.setStatus("Dodijeljen operateru");
     saveTicketToFile(ticket);
