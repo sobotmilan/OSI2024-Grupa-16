@@ -5,6 +5,7 @@
 #include "User.h"
 #include "menuOperater.h"
 #include "menu_admin.h"
+#include "menuOperater.h"
 
 int main()
 {
@@ -72,13 +73,7 @@ int main()
         {
             do
             {
-                std::cout << "\n===== MENI ZA KORISNIKE =====" << std::endl;
-                std::cout << "1. Kreiraj tiket" << std::endl;      // Ana, Milan
-                std::cout << "2. Prikazi sve tikete" << std::endl; // Ana, mogucnost dopune informacija gdje je dozvoljeno
-                std::cout << "3. Odjava" << std::endl;
-                std::cout << "Unesite svoj izbor: ";
-                std::cin >> choice;
-
+              showMenuUser(currentUser);
             } while (choice != 3);
         }
         else if (currentUser.getRole() == "Operater")
