@@ -160,7 +160,7 @@ public:
         ifstream file(namefile);
         if (!file)
         {
-            cerr << "File failed opening, close running file" << endl;
+            cerr << "Fajl nije uspešno otvoren, zatvorite otvoreni fajl" << endl;
             return false;
         }
 
@@ -188,14 +188,13 @@ public:
 
         if (!userDeleted)
         {
-            cerr << "User not found or already inactive." << endl;
             return false;
         }
 
         ofstream outFile(namefile, ios::trunc);
         if (!outFile)
         {
-            cerr << "Error: Cannot write to the file!" << endl;
+            cerr << "Greška: Nije moguće pisati u fajl!" << endl;
             return false;
         }
 

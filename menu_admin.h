@@ -126,9 +126,23 @@ void menuForAdmin(file User, file Keys, file Organization, Organizacija org, std
                 std::string delete_user;
                 do
                 {
-                    std::cout << "Unesite korisnicko ime naloga koji zelite brisati: " << std::endl;
+                    std::cout << "Unesite korisničko ime naloga koji želite brisati: " << std::endl;
                     std::cin >> delete_user;
-                } while (!User.deleteUser(delete_user));
+
+                    if (delete_user == currentUser)
+                    {
+                        std::cout << "Ne možete brisati trenutnog korisnika." << std::endl;
+                    }
+                    else if (!User.deleteUser(delete_user))
+                    {
+                        std::cout << "Korisnik nije pronađen ili je već obrisan. Pokušajte ponovo." << std::endl;
+                    }
+                    else
+                    {
+                        std::cout << "Korisnik uspešno obrisan." << std::endl;
+                        break; // Izlaz iz petlje kada je brisanje uspešno
+                    }
+                } while (true);
 
                 cout << "Uspjesno obrisan nalog " << delete_user << endl;
             }
