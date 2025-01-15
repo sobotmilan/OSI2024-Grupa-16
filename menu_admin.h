@@ -1,8 +1,21 @@
 #include <iostream>
 #include <string>
+#include <cctype>
 #include "file.h"
 #include "Organizacija.h"
 #include "User.h"
+
+bool hasNoSpaces(const std::string &input)
+{
+    for (char c : input)
+    {
+        if (std::isspace(c)) 
+        {
+            return false; 
+        }
+    }
+    return true; 
+}
 
 void menuForAdmin(file User, Organizacija org, std::string currentUser)
 {
