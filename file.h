@@ -242,7 +242,7 @@ public:
         ifstream file(namefile);
         if (!file)
         {
-            throw "Error: Could not open file for reading.\n";
+            throw "Greška. Nije moguće otvoriti datoteku za čitanje.\n";
             return false;
         }
 
@@ -277,12 +277,12 @@ public:
         ofstream fileAppend(namefile, ios::app);
         if (!fileAppend.is_open())
         {
-            throw "Greska: nemoguce otvaranje datoteke za izmjene.\n";
+            throw "Greška. Nije moguće otvoriti datoteku za izmjene.\n";
         }
 
         fileAppend << organizationName << "," << key << "\n"; // Dodaj organizaciju
         fileAppend.close();
-        cout << "Organizacija uspjesno dodana.\n";
+        cout << "Organizacija uspješno dodana.\n";
     }
 
     void allTickets()
@@ -387,7 +387,7 @@ public:
         }
     }
 
-    // Metode za Key.csv
+    // Metoda za provjeru validnosti ključa
     bool validateKey(const string &key)
     {
         ifstream inputFile("Keys.csv", ios::in); // Otvori fajl sa ključevima
@@ -419,6 +419,7 @@ public:
         return false; // Ključ nije validan
     }
 
+    // Metoda za pronalaženje prvog slobodnog ključa
     string getFirstFreeKey()
     {
         ifstream file("Keys.csv", ios::in);
@@ -454,6 +455,7 @@ public:
         return firstFreeKey;
     }
 
+    // Metoda za dodjeljivanje ključa organizaciji
     bool addKeyToOrganization(const string &key, const string &orgName)
     {
         ifstream inputFile("Keys.csv", ios::in);
@@ -506,7 +508,7 @@ public:
         }
 
         // Dodavanje ključa organizaciji u Organizacija.csv
-        ofstream orgFile("Organizacija.csv", ios::app); // Ažuriranje fajla sa novom organizacijom
+        ofstream orgFile("Organization.csv", ios::app); // Ažuriranje fajla sa novom organizacijom
         if (orgFile.is_open())
         {
             orgFile << orgName << "," << key << "\n";

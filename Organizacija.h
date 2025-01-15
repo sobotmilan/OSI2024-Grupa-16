@@ -36,8 +36,8 @@ public:
         // Provjera da li je fajl uspešno otvoren
         if (!file.is_open())
         {
-            cerr << "Greška pri otvaranju fajla." << endl;
-            return "Greška pri čitanju fajla";
+            cerr << "Greška pri otvaranju datoteke." << endl;
+            return "Greška. Nije moguće otvoriti datoteku za čitanje.";
         }
 
         string line;
