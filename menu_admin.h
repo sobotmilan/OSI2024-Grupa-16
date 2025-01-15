@@ -215,7 +215,6 @@ void menuForAdmin(file User, file Keys, file Organization, Organizacija org, std
                             if (Organization.addKeyToOrganization(freeKey, org.getNazivOrganizacije())) // Metoda za dodavanje ključa organizaciji
                             {
                                 org.setKljuc(freeKey); // Dodijeli ključ organizaciji
-                                std::cout << "Ključ je uspješno dodijeljen organizaciji: " << org.getNazivOrganizacije() << std::endl;
                                 std::cout << "Komercijalna verzija uspješno aktivirana!\n";
                             }
                         }

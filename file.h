@@ -24,6 +24,51 @@ public:
     file(const string &namefile) : namefile(namefile) {}
     void setNamefile(const string &namefile) { this->namefile = namefile; }
     string getNamefile() const { return namefile; }
+
+    std::string trim(const std::string &str)
+    {
+        // Provjera da li je string prazan
+        if (str.empty())
+        {
+            return str;
+        }
+
+        // Trimovanje sa početka i kraja
+        size_t first = str.find_first_not_of(' ');
+        size_t last = str.find_last_not_of(' ');
+
+        // Ako su prvi i posljednji indeksi nevažeći, to znači da je string samo razmaci
+        if (first == std::string::npos || last == std::string::npos)
+        {
+            return ""; // Vraćamo prazan string
+        }
+
+        // Uzimanje substringa bez početnih i krajnjih razmaka
+        std::string trimmed = str.substr(first, (last - first + 1));
+
+        // Uklanjanje višestrukih razmaka unutar stringa
+        std::string result;
+        bool inSpaces = false;
+        for (char c : trimmed)
+        {
+            if (c == ' ')
+            {
+                if (!inSpaces)
+                {
+                    result += ' ';
+                    inSpaces = true;
+                }
+            }
+            else
+            {
+                result += c;
+                inSpaces = false;
+            }
+        }
+
+        return result;
+    }
+
     int numOpsInOrg() const
     {
         ifstream userBase("User.csv", ios::in);
@@ -268,7 +313,11 @@ public:
     // Metoda koja dodaje organizaciju u fajl, ako već ne postoji
     void addOrganization(const string &organizationName, const string &key)
     {
-        if (organizationExists(organizationName))
+        // Trimovanje organizacije i ključa
+        string trimmedOrganizationName = trim(organizationName);
+        string trimmedKey = trim(key);
+
+        if (organizationExists(trimmedOrganizationName))
         {
             cout << "Organizacija vec postoji.\n";
         }
@@ -279,7 +328,8 @@ public:
             throw "Greška. Nije moguće otvoriti datoteku za izmjene.\n";
         }
 
-        fileAppend << organizationName << "," << key << "\n"; // Dodaj organizaciju
+        // Dodaj organizaciju bez dodavanja nepotrebnog novog reda
+        fileAppend << trimmedOrganizationName << "," << trimmedKey; 
         fileAppend.close();
         cout << "Organizacija uspješno dodana.\n";
     }
@@ -457,6 +507,10 @@ public:
     // Metoda za dodjeljivanje ključa organizaciji
     bool addKeyToOrganization(const string &key, const string &orgName)
     {
+        // Trimovanje ključa i organizacije
+        string trimmedKey = trim(key);
+        string trimmedOrgName = trim(orgName);
+
         ifstream inputFile("Keys.csv", ios::in);
         if (!inputFile)
         {
@@ -480,7 +534,7 @@ public:
             string currentKey, currentStatus;
             if (getline(ss, currentKey, ',') && getline(ss, currentStatus))
             {
-                if (currentKey == key && currentStatus == "slobodan")
+                if (currentKey == trimmedKey && currentStatus == "slobodan")
                 {
                     currentStatus = "aktivan"; // Mijenjamo status ključa u 'aktivan'
                     keyFound = true;
@@ -492,26 +546,23 @@ public:
         inputFile.close();
         tempFile.close();
 
-        // Ako ključ nije pronađen ili nije slobodan, vraćamo grešku
         if (!keyFound)
         {
             cerr << "Ključ nije pronađen ili nije slobodan.\n";
             return false;
         }
 
-        // Zamjena originalnog fajla sa ažuriranim
         if (remove("Keys.csv") != 0 || rename("temp.csv", "Keys.csv") != 0)
         {
             cerr << "Greška. Nije moguće zamijeniti privremenu datoteku.\n";
             return false;
         }
 
-        // Dodavanje ključa organizaciji u Organizacija.csv
         ofstream orgFile("Organization.csv", ios::app); // Ažuriranje fajla sa novom organizacijom
         if (orgFile.is_open())
         {
-            orgFile << orgName << "," << key << "\n";
-            orgFile.flush(); 
+            orgFile << trimmedOrgName << trimmedKey << "\n"; 
+            orgFile.close();
         }
 
         return true;
