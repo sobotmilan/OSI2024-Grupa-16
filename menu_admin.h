@@ -122,13 +122,15 @@ void menuForAdmin(file User, file Keys, file Organization, Organizacija org, std
             }
             else if (izbor == 2)
             {
-                // User.showExcept(currentUser);
+                User.showExcept(currentUser);
                 std::string delete_user;
                 do
                 {
-                    std::cout << "Unesite ime korisnika koji zelite brisati: " << std::endl;
+                    std::cout << "Unesite korisnicko ime naloga koji zelite brisati: " << std::endl;
                     std::cin >> delete_user;
                 } while (!User.deleteUser(delete_user));
+
+                cout << "Uspjesno obrisan nalog " << delete_user << endl;
             }
         }
         else if (choice == 3)

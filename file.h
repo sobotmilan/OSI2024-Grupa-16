@@ -52,6 +52,30 @@ public:
 
     // Metode za Usere
 
+    void showExcept(User target)
+    {
+        ifstream userBase("User.csv", ios::in);
+        if (!userBase.is_open())
+            throw runtime_error("Neuspjesno otvaranje baze korisnika.");
+
+        string currLine;
+
+        while (getline(userBase, currLine))
+        {
+            istringstream ss(currLine);
+            string user, pass, role;
+            if (getline(ss, user, ',') && getline(ss, pass, ',') && getline(ss, role, ','))
+            {
+                if (user != target.getUsername())
+                {
+                    cout << user << ","s << role << endl;
+                }
+            }
+        }
+
+        userBase.close();
+    }
+
     bool isEmpty()
     {
         ifstream file(namefile);
