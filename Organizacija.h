@@ -14,6 +14,7 @@ class Organizacija
 private:
     string kljuc;
     string nazivOrganizacije;
+    file fileObj;
 
 public:
     void setKljuc(string kljuc) { this->kljuc = kljuc; }
@@ -33,8 +34,7 @@ public:
         return true;
     }
 
-    // Provjerava verziju organizacije
-    string provjeriVerziju()
+    string checkVersion(string kljuc)
     {
         // Ako je ključ prazan, organizacija je besplatna
         if (kljuc.empty())
@@ -43,7 +43,15 @@ public:
         }
 
         // Ako ključ nije prazan, provjeravamo CSV fajl
-        ifstream file("keys.csv");
+        ifstream file("Keys.csv");
+
+        // Provjera da li je fajl uspešno otvoren
+        if (!file.is_open())
+        {
+            cerr << "Greška pri otvaranju fajla." << endl;
+            return "Greška pri čitanju fajla";
+        }
+
         string line;
         string status = "Besplatna verzija"; // Podrazumijevano je besplatna
 
@@ -64,6 +72,29 @@ public:
         }
         file.close();
         return status;
+    }
+
+    // Dodavanje ključa organizaciji
+    bool addKeyToOrg(const string &key)
+    {
+        // Provjeri da li je ključ validan
+        if (!fileObj.validateKey(key))
+        {
+            cout << "Ključ nije validan!" << endl;
+            return false;
+        }
+
+        // Dodjeljivanje ključa organizaciji
+        if (fileObj.addKeyToOrganization(key)) // Koristi postojeću funkciju iz file.h
+        {
+            setKljuc(key); // Dodijeli ključ organizaciji
+            cout << "Ključ je uspješno dodijeljen organizaciji: " << getNazivOrganizacije() << endl;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     int numOpsInOrg() const

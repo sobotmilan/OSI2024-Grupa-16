@@ -58,8 +58,9 @@ void menuForAdmin(file User, Organizacija org, std::string currentUser)
                     role = "Admin";
                 }
 
-                std::string verzija = org.provjeriVerziju();
+                std::string verzija = org.checkVersion(org.getKljuc());
                 bool dozvola;
+
                 if (verzija == "Besplatna verzija")
                 {
                     if (count == 1)
@@ -163,53 +164,48 @@ void menuForAdmin(file User, Organizacija org, std::string currentUser)
         }
         else if (choice == 4)
         {
-            std::cout << "Provjera verzije sistema" << std::endl;
-            std::string verzija = org.provjeriVerziju();
+            std::string verzija = org.checkVersion(org.getKljuc()); // Provjerava trenutnu verziju sistema
             std::cout << "Trenutna verzija sistema: " << verzija << std::endl;
 
             if (verzija == "Besplatna verzija")
             {
                 char aktivacija;
-                std::cout << "Želite li aktivirati komercijalnu verziju? (Y/N): ";
+                std::cout << "Da li želite da aktivirate komercijalnu verziju (Y/N)? ";
                 std::cin >> aktivacija;
 
                 if (aktivacija == 'Y' || aktivacija == 'y')
                 {
-                    std::string key;
-                    if (org.unosKljuča()) // Unos ključa za aktivaciju
+                    if (org.enterKey()) // Unos ključa preko enterKey() funkcije
                     {
-                        std::string key = org.getKljuc();
+                        std::string unosKljuča = org.getKljuc(); // Preuzimamo uneseni ključ
 
-                        if (User.validateKey(key)) // Provjera validnosti ključa
+                        // Validacija ključa
+                        if (User.validateKey(unosKljuča)) // Provjera validnosti ključa
                         {
-                            std::cout << "Ključ je validan!" << std::endl;
-
-                            // Dodaj ključ organizaciji
-                            std::string freeKey = User.getFirstFreeKey();
-                            if (!freeKey.empty())
+                            // Aktiviranje ključa pozivom metode addKeyToOrg() iz Organizacija.h
+                            if (org.addKeyToOrg(unosKljuča)) 
                             {
-                                User.addKeyToOrganization("organization_name", freeKey);
-                                std::cout << "Komercijalna verzija je aktivirana!" << std::endl;
-                            }
-                            else
-                            {
-                                std::cout << "Nema slobodnih ključeva!" << std::endl;
+                                std::cout << "Komercijalna verzija uspješno aktivirana!\n";
                             }
                         }
                         else
                         {
-                            std::cout << "Nevažeći ključ!" << std::endl;
+                            std::cerr << "Nevažeći ključ. Molimo pokušajte ponovo.\n";
                         }
                     }
                 }
                 else if (aktivacija == 'N' || aktivacija == 'n')
                 {
-                    std::cout << "Odlučili ste da ne aktivirate komercijalnu verziju." << std::endl;
+                    std::cout << "Odlučili ste da ne aktivirate komercijalnu verziju.\n";
                 }
                 else
                 {
-                    std::cout << "Nevažeći unos. Molimo vas da unesete 'Y' ili 'N'." << std::endl;
+                    std::cout << "Nevažeći unos. Molimo vas da unesete 'Y' ili 'N'.\n";
                 }
+            }
+            else
+            {
+                std::cout << "Već imate komercijalnu verziju sistema.\n";
             }
         }
     } while (choice != 5);
