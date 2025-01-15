@@ -194,16 +194,20 @@ void menuForAdmin(file User, file Keys, file Organization, Organizacija org, std
                     std::string freeKey = Keys.getFirstFreeKey(); // Preuzimanje prvog slobodnog ključa
                     if (!freeKey.empty())                         // Ako je slobodan ključ pronađen
                     {
-                        // Dodavanje ključa organizaciji
-                        if (Organization.addKeyToOrganization(freeKey, org.getNazivOrganizacije())) // Metoda za dodavanje ključa organizaciji
+                        // Validacija ključa
+                        if (Keys.validateKey(freeKey)) // Provjera da li je ključ validan
                         {
-                            org.setKljuc(freeKey); // Dodijeli ključ organizaciji
-                            std::cout << "Ključ je uspješno dodijeljen organizaciji: " << org.getNazivOrganizacije() << std::endl;
-                            std::cout << "Komercijalna verzija uspješno aktivirana!\n";
+                            // Dodavanje ključa organizaciji
+                            if (Organization.addKeyToOrganization(freeKey, org.getNazivOrganizacije())) // Metoda za dodavanje ključa organizaciji
+                            {
+                                org.setKljuc(freeKey); // Dodijeli ključ organizaciji
+                                std::cout << "Ključ je uspješno dodijeljen organizaciji: " << org.getNazivOrganizacije() << std::endl;
+                                std::cout << "Komercijalna verzija uspješno aktivirana!\n";
+                            }
                         }
                         else
                         {
-                            std::cerr << "Greška pri dodavanju ključa organizaciji.\n"; // Greška u metodi addKeyToOrganization
+                            std::cerr << "Greška: Nevažeći ključ. Aktivacija nije uspjela.\n";
                         }
                     }
                     else
